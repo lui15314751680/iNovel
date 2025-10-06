@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle}">分类浏览 - 书海阁</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+
+        * {
+            font-family: 'Noto Sans SC', sans-serif;
+        }
+
+        :root {
+            --color-primary: #1e40af;
+            --color-primary-light: #3b82f6;
+            --color-accent: #10b981;
+            --color-bg-dark: #0f172a;
+            --color-bg-darker: #020617;
+            --color-bg-card: #1e293b;
+            --color-text: #f1f5f9;
+            --color-text-muted: #94a3b8;
+        }
+
+        body {
+            background: var(--color-bg-dark);
+            color: var(--color-text);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #3b82f6 0%, #10b981 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .book-cover {
+            aspect-ratio: 3/4;
+            object-fit: cover;
+        }
+
+        .filter-tag {
+            transition: all 0.2s ease;
+        }
+
+        .filter-tag:hover {
+            transform: translateY(-2px);
+        }
+
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        .selected-filter-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(59, 130, 246, 0.2);
+            border: 1px solid var(--color-primary-light);
+        }
+
+        .tag-close {
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .tag-close:hover {
+            color: #fff;
+        }
+
+        .skeleton {
+            background: linear-gradient(90deg, #2d3748 25%, #4a5568 50%, #2d3748 75%);
+            background-size: 200% 100%;
+            animation: skeleton-loading 1.5s infinite;
+        }
+
+        @keyframes skeleton-loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+    </style>
+</head>
+<body>
+<!-- 顶部导航 -->
+<nav class="bg-slate-900 border-b border-slate-800 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+            <div class="flex items-center gap-8">
+                <a th:href="@{/}" class="flex items-center gap-2">
+                    <i data-lucide="book-open" class="w-8 h-8 text-blue-500"></i>
+                    <span class="text-2xl font-bold gradient-text">书海阁</span>
+                </a>
+
+                <div class="hidden md:flex items-center gap-6">
+                    <a href="/index" class="nav-link text-slate-300 hover:text-white text-sm font-medium">首页</a>
+                    <a href="/category" class="nav-link text-white text-sm font-medium">分类</a>
+                    <a href="/author-center" class="text-slate-300 hover:text-white text-sm font-medium">作者中心</a>
+                    <a href="/user-center" class="text-slate-300 hover:text-white text-sm font-medium">个人中心</a>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <div class="hidden sm:flex items-center bg-slate-800 rounded-lg px-4 py-2 w-64 relative">
+                    <i data-lucide="search" class="w-4 h-4 text-slate-400"></i>
+                    <input id="searchQuery" type="text" placeholder="搜索书名、作者"
+                           class="bg-transparent border-none outline-none ml-2 text-sm text-slate-300 placeholder-slate-500 w-full" />
+                    <div id="searchLoading" class="absolute right-3 top-1/2 -translate-y-1/2 hidden">
+                        <i data-lucide="loader-2" class="w-4 h-4 text-blue-400 animate-spin"></i>
+                    </div>
+                </div>
+
+                <a href="/log">
+                    <button class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                        <i data-lucide="user" class="w-4 h-4"></i>
+                        <span class="hidden sm:inline">登录</span>
+                    </button>
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- 主要内容 -->
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- 页面标题 -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold mb-2">分类浏览</h1>
+        <p class="text-slate-400">发现你喜欢的小说</p>
+    </div>
+
+    <!-- 已选筛选条件 -->
+    <div id="selectedFilters" class="flex flex-wrap gap-2 mb-6 hidden">
+        <!-- 动态生成已选筛选标签 -->
+    </div>
+
+    <!-- 筛选区域 -->
+    <div class="bg-slate-800 rounded-2xl p-6 mb-8">
+        <!-- 分类筛选 -->
+        <div class="mb-6">
+            <div class="flex items-center gap-2 mb-3">
+                <i data-lucide="tag" class="w-5 h-5 text-blue-400"></i>
+                <span class="font-medium">分类</span>
+            </div>
+            <div class="flex flex-wrap gap-2" id="categoryFilters">
+                <button class="filter-tag px-4 py-2 rounded-lg text-sm font-medium transition-all bg-blue-600 text-white"
+                        data-category="全部">全部</button>
+                <button class="filter-tag px-4 py-2 rounded-lg text-sm font-medium transition-all bg-slate-700 text-slate-300 hover:bg-slate-600"
+                        data-category="玄幻">玄幻</button>
+                <button class="filter-tag px-4 py-2 rounded-lg text-sm font-medium transition-all bg-slate-700 text-slate-300 hover:bg-slate-600"
+                        data-category="仙侠">仙侠</button>
+                <button class="filter-tag px-4 py-2 rounded-lg text-sm font-medium transition-all bg-slate-700 text-slate-300 hover:bg-slate-600"
+                        data-category="都市">都市</button>
+                <button class="filter-tag px-4 py-2 rounded-lg text-sm font-medium transition-all bg-slate-700 text-slate-300 hover:bg-slate-600"
+                        data-category="历史">历史</button>
+                <button class="filter-tag px-4 py-2 rounded-lg text-sm font-medium transition-all bg-slate-700 text-slate-300 hover:bg-slate-600"
+                        data-category="科幻">科幻</button>
+                <button class="filter-tag px-4 py-2 rounded-lg text-sm font-medium transition-all bg-slate-700 text-slate-300 hover:bg-slate-600"
+                        data-category="游戏">游戏</button>
+                <button class="filter-tag px-4 py-2 rounded-lg text-sm font-medium transition-all bg-slate-700 text-slate-300 hover:bg-slate-600"
+                        data-category="武侠">武侠</button>
+                <button class="filter-tag px-4 py-2 rounded-lg text-sm font-medium transition-all bg-slate-700 text-slate-300 hover:bg-slate-600"
+                        data-category="悬疑">悬疑</button>
+                <button class="filter-tag px-4 py-2 rounded-lg text-sm font-medium transition-all bg-slate-700 text-slate-300 hover:bg-slate-600"
+                        data-category="言情">言情</button>
+                <button class="filter-tag px-4 py-2 rounded-lg text-sm font-medium transition-all bg-slate-700 text-slate-300 hover:bg-slate-600"
+                        data-category="军事">军事</button>
+            </div>
+        </div>
+
+        <!-- 状态筛选 -->
+        <div class="mb-6">
+            <div class="flex items-center gap-2 mb-3">
+                <i data-lucide="check-circle" class="w-5 h-5 text-green-400"></i>
+                <span class="font-medium">状态</span>
+            </div>
+            <div class="flex flex-wrap gap-2" id="statusFilters">
+                <button class="filter-tag px-4 py-2 rounded-lg text-sm font-medium transition-all bg-blue-600 text-white"
+                        data-status="全部">全部</button>
+                <button class="filter-tag px-4 py-2 rounded-lg text-sm font-medium transition-all bg-slate-700 text-slate-300 hover:bg-slate-600"
+                        data-status="连载">连载</button>
+                <button class="filter-tag px-4 py-2 rounded-lg text-sm font-medium transition-all bg-slate-700 text-slate-300 hover:bg-slate-600"
+                        data-status="完结">完结</button>
+            </div>
+        </div>
+
+        <!-- 字数筛选 -->
+        <div class="mb-6">
+            <div class="flex items-center gap-2 mb-3">
+                <i data-lucide="file-text" class="w-5 h-5 text-purple-400"></i>
+                <span class="font-medium">字数</span>
+            </div>
+            <div class="flex flex-wrap gap-2" id="wordCountFilters">
+                <button class="filter-tag px-4 py-2 rounded-lg text-sm font-medium transition-all bg-blue-600 text-white"
+                        data-wordcount="全部">全部</button>
+                <button class="filter-tag px-4 py-2 rounded-lg text-sm font-medium transition-all bg-slate-700 text-slate-300 hover:bg-slate-600"
+                        data-wordcount="30万字以下">30万字以下</button>
+                <button class="filter-tag px-4 py-2 rounded-lg text-sm font-medium transition-all bg-slate-700 text-slate-300 hover:bg-slate-600"
+                        data-wordcount="30-50万字">30-50万字</button>
+                <button class="filter-tag px-4 py-2 rounded-lg text-sm font-medium transition-all bg-slate-700 text-slate-300 hover:bg-slate-600"
+                        data-wordcount="50-100万字">50-100万字</button>
+                <button class="filter-tag px-4 py-2 rounded-lg text-sm font-medium transition-all bg-slate-700 text-slate-300 hover:bg-slate-600"
+                        data-wordcount="100-200万字">100-200万字</button>
+                <button class="filter-tag px-4 py-2 rounded-lg text-sm font-medium transition-all bg-slate-700 text-slate-300 hover:bg-slate-600"
+                        data-wordcount="200万字以上">200万字以上</button>
+            </div>
+        </div>
+
+        <!-- 操作按钮 -->
+        <div class="flex items-center justify-between pt-4 border-t border-slate-700">
+            <button id="resetFilters"
+                    class="flex items-center gap-2 text-slate-400 hover:text-white text-sm transition-colors">
+                <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                <span>重置筛选</span>
+            </button>
+            <div class="text-sm text-slate-400">
+                找到 <span id="resultCount" class="text-blue-400 font-medium">0</span> 本小说
+            </div>
+        </div>
+    </div>
+
+    <!-- 排序和结果 -->
+    <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xl font-bold">搜索结果</h2>
+        <div class="flex items-center gap-2">
+            <span class="text-sm text-slate-400">排序：</span>
+            <select id="sortBy"
+                    class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-300 outline-none focus:border-blue-500 transition-colors">
+                <option value="hot">最热门</option>
+                <option value="new">最新</option>
+                <option value="rating">评分</option>
+                <option value="views">阅读量</option>
+                <option value="favorites">收藏量</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- 书籍列表 -->
+    <div id="booksList" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
+        <!-- 书籍项将通过JavaScript动态生成 -->
+    </div>
+
+    <!-- 空状态 -->
+    <div id="emptyState" class="text-center py-20 hidden">
+        <i data-lucide="search-x" class="w-16 h-16 mx-auto mb-4 text-slate-600"></i>
+        <h3 class="text-xl font-medium mb-2">没有找到相关小说</h3>
+        <p class="text-slate-400 mb-6">试试调整筛选条件或搜索关键词</p>
+        <div class="flex flex-col sm:flex-row justify-center gap-3">
+            <button id="resetEmptyState"
+                    class="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-medium transition-colors">
+                重置筛选
+            </button>
+            <a href="/index"
+               class="bg-slate-700 hover:bg-slate-600 px-6 py-3 rounded-lg font-medium transition-colors">
+                返回首页
+            </a>
+        </div>
+
+        <!-- 热门推荐 -->
+        <div class="mt-10 max-w-2xl mx-auto">
+            <h4 class="text-lg font-medium mb-4 text-left">热门推荐</h4>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                <!-- 热门推荐书籍将动态生成 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 分页 -->
+    <div id="pagination" class="flex items-center justify-center gap-2 mt-12 hidden">
+        <button id="prevPage" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+            <i data-lucide="chevron-left" class="w-5 h-5"></i>
+        </button>
+        <div id="pageNumbers" class="flex gap-1">
+            <!-- 页码将动态生成 -->
+        </div>
+        <button id="nextPage" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+            <i data-lucide="chevron-right" class="w-5 h-5"></i>
+        </button>
+    </div>
+</main>
+
+<!-- 页脚 -->
+<footer class="bg-slate-900 border-t border-slate-800 mt-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 text-center text-sm text-slate-500">
+        <p>© 2025 书海阁. 保留所有权利.</p>
+    </div>
+</footer>
+
+<script>
+    // 书籍数据 - 完善字段信息
+    const allBooks = [
+        { id: 1, title: '诡秘之主', author: '爱潜水的乌贼', category: '玄幻',
+            coverId: 'guimiImage',
+            rating: 9.5, views: '1.2亿', status: '完结', wordCount: '448万字',
+            tags: ['克苏鲁', '蒸汽朋克'], favorites: 350000, updateTime: '2023-10-15' },
+        { id: 2, title: '大奉打更人', author: '卖报小郎君', category: '仙侠',
+            coverId: 'dafImage',
+            rating: 9.2, views: '9800万', status: '连载', wordCount: '520万字',
+            tags: ['探案', '升级流'], favorites: 280000, updateTime: '2024-05-20' },
+        { id: 3, title: '牧神记', author: '宅猪', category: '玄幻',
+            coverId: 'mushImage',
+            rating: 9.0, views: '8500万', status: '完结', wordCount: '680万字',
+            tags: ['东方玄幻', '热血'], favorites: 220000, updateTime: '2023-08-10' },
+        { id: 4, title: '凡人修仙传', author: '忘语', category: '仙侠',
+            coverId: 'fanrenImage',
+            rating: 9.3, views: '7200万', status: '完结', wordCount: '580万字',
+            tags: ['凡人流', '修仙'], favorites: 420000, updateTime: '2023-05-05' },
+        { id: 5, title: '圣墟', author: '辰东', category: '玄幻',
+            coverId: 'shxuImage',
+            rating: 8.8, views: '6800万', status: '完结', wordCount: '720万字',
+            tags: ['进化', '热血'], favorites: 180000, updateTime: '2023-12-20' },
+        { id: 6, title: '雪中悍刀行', author: '烽火戏诸侯', category: '武侠',
+            coverId: 'xuezhImage',
+            rating: 9.4, views: '6500万', status: '完结', wordCount: '450万字',
+            tags: ['江湖', '权谋'], favorites: 310000, updateTime: '2023-03-15' },
+        { id: 7, title: '斗破苍穹', author: '天蚕土豆', category: '玄幻',
+            coverId: 'doupoImage',
+            rating: 8.9, views: '6200万', status: '完结', wordCount: '520万字',
+            tags: ['热血', '升级流'], favorites: 520000, updateTime: '2022-11-30' },
+        { id: 8, title: '完美世界', author: '辰东', category: '玄幻',
+            coverId: 'wanmeiImage',
+            rating: 9.1, views: '5800万', status: '完结', wordCount: '680万字',
+            tags: ['热血', '成长'], favorites: 380000, updateTime: '2023-07-25' },
+        { id: 9, title: '遮天', author: '辰东', category: '玄幻',
+            coverId: 'zhetianImage',
+            rating: 9.2, views: '5500万', status: '完结', wordCount: '650万字',
+            tags: ['热血', '群像'], favorites: 410000, updateTime: '2023-01-10' },
+        { id: 10, title: '择天记', author: '猫腻', category: '玄幻',
+            coverId: 'zetianImage',
+            rating: 8.7, views: '5200万', status: '完结', wordCount: '420万字',
+            tags: ['东方玄幻', '成长'], favorites: 190000, updateTime: '2022-09-18' },
+        { id: 11, title: '剑来', author: '烽火戏诸侯', category: '仙侠',
+            coverId: 'jianlaiImage',
+            rating: 9.0, views: '4800万', status: '连载', wordCount: '800万字',
+            tags: ['剑修', '江湖'], favorites: 260000, updateTime: '2024-05-18' },
+        { id: 12, title: '元尊', author: '天蚕土豆', category: '玄幻',
+            coverId: 'yuanzunImage',
+            rating: 8.6, views: '4500万', status: '完结', wordCount: '480万字',
+            tags: ['热血', '升级流'], favorites: 210000, updateTime: '2023-06-05' }
+    ];
+
+    // 筛选状态
+    let filterState = {
+        category: '全部',
+        status: '全部',
+        wordCount: '全部',
+        searchQuery: '',
+        sortBy: 'hot',
+        currentPage: 1,
+        pageSize: 12 // 每页显示12本书
+    };
+
+    // 缓存处理
+    const CACHE_KEY = 'book_category_cache';
+    const CACHE_EXPIRY = 3600000; // 1小时过期
+
+    // DOM元素
+    const booksListEl = document.getElementById('booksList');
+    const emptyStateEl = document.getElementById('emptyState');
+    const paginationEl = document.getElementById('pagination');
+    const resultCountEl = document.getElementById('resultCount');
+    const searchInputEl = document.getElementById('searchQuery');
+    const sortByEl = document.getElementById('sortBy');
+    const selectedFiltersEl = document.getElementById('selectedFilters');
+    const searchLoadingEl = document.getElementById('searchLoading');
+    const prevPageBtn = document.getElementById('prevPage');
+    const nextPageBtn = document.getElementById('nextPage');
+    const pageNumbersEl = document.getElementById('pageNumbers');
+
+    // 初始化页面
+    document.addEventListener('DOMContentLoaded', () => {
+        // 尝试从缓存加载数据
+        const cachedData = getCachedData();
+        if (cachedData) {
+            renderBooks(cachedData.filteredBooks);
+            updatePagination(cachedData.totalPages);
+        } else {
+            // 首次加载或缓存过期
+            const filteredBooks = applyFilters(allBooks);
+            cacheData(filteredBooks);
+            renderBooks(filteredBooks);
+            updatePagination(Math.ceil(filteredBooks.length / filterState.pageSize));
+        }
+
+        // 初始化事件监听
+        initEventListeners();
+
+        // 初始化图标
+        lucide.createIcons();
+
+        // 初始化懒加载
+        initLazyLoading();
+    });
+
+    // 初始化事件监听
+    function initEventListeners() {
+        // 分类筛选
+        document.querySelectorAll('#categoryFilters button').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                setActiveFilter(e.target, '#categoryFilters');
+                filterState.category = e.target.dataset.category;
+                filterState.currentPage = 1; // 重置到第一页
+                applyAndRenderFilters();
+            });
+        });
+
+        // 状态筛选
+        document.querySelectorAll('#statusFilters button').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                setActiveFilter(e.target, '#statusFilters');
+                filterState.status = e.target.dataset.status;
+                filterState.currentPage = 1;
+                applyAndRenderFilters();
+            });
+        });
+
+        // 字数筛选
+        document.querySelectorAll('#wordCountFilters button').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                setActiveFilter(e.target, '#wordCountFilters');
+                filterState.wordCount = e.target.dataset.wordcount;
+                filterState.currentPage = 1;
+                applyAndRenderFilters();
+            });
+        });
+
+        // 搜索框
+        searchInputEl.addEventListener('input', debounce((e) => {
+            searchLoadingEl.classList.remove('hidden');
+            filterState.searchQuery = e.target.value.toLowerCase();
+            filterState.currentPage = 1;
+
+            // 模拟搜索延迟
+            setTimeout(() => {
+                applyAndRenderFilters();
+                searchLoadingEl.classList.add('hidden');
+            }, 300);
+        }, 300));
+
+        // 排序
+        sortByEl.addEventListener('change', (e) => {
+            filterState.sortBy = e.target.value;
+            applyAndRenderFilters();
+        });
+
+        // 重置筛选
+        document.getElementById('resetFilters').addEventListener('click', resetFilters);
+        document.getElementById('resetEmptyState').addEventListener('click', resetFilters);
+
+        // 分页事件
+        prevPageBtn.addEventListener('click', () => {
+            if (filterState.currentPage > 1) {
+                filterState.currentPage--;
+                applyAndRenderFilters();
+                scrollToTop();
+            }
+        });
+
+        nextPageBtn.addEventListener('click', () => {
+            const filteredBooks = applyFilters(allBooks);
+            const totalPages = Math.ceil(filteredBooks.length / filterState.pageSize);
+
+            if (filterState.currentPage < totalPages) {
+                filterState.currentPage++;
+                applyAndRenderFilters();
+                scrollToTop();
+            }
+        });
+    }
+
+    // 设置激活的筛选按钮样式
+    function setActiveFilter(button, parentSelector) {
+        document.querySelectorAll(`${parentSelector} button`).forEach(btn => {
+            btn.classList.remove('bg-blue-600', 'text-white');
+            btn.classList.add('bg-slate-700', 'text-slate-300', 'hover:bg-slate-600');
+        });
+
+        button.classList.remove('bg-slate-700', 'text-slate-300', 'hover:bg-slate-600');
+        button.classList.add('bg-blue-600', 'text-white');
+    }
+
+    // 应用并渲染筛选结果
+    function applyAndRenderFilters() {
+        const filteredBooks = applyFilters(allBooks);
+        cacheData(filteredBooks);
+        renderBooks(filteredBooks);
+        updatePagination(Math.ceil(filteredBooks.length / filterState.pageSize));
+        updateSelectedFilters();
+    }
+
+    // 应用筛选
+    function applyFilters(books) {
+        let filteredBooks = [...books];
+
+        // 分类筛选
+        if (filterState.category !== '全部') {
+            filteredBooks = filteredBooks.filter(book => book.category === filterState.category);
+        }
+
+        // 状态筛选
+        if (filterState.status !== '全部') {
+            filteredBooks = filteredBooks.filter(book => book.status === filterState.status);
+        }
+
+        // 字数筛选
+        if (filterState.wordCount !== '全部') {
+            filteredBooks = filterByWordCount(filteredBooks, filterState.wordCount);
+        }
+
+        // 搜索筛选
+        if (filterState.searchQuery) {
+            filteredBooks = filteredBooks.filter(book =>
+                book.title.toLowerCase().includes(filterState.searchQuery) ||
+                book.author.toLowerCase().includes(filterState.searchQuery)
+            );
+        }
+
+        // 排序
+        filteredBooks = sortBooks(filteredBooks, filterState.sortBy);
+
+        return filteredBooks;
+    }
+
+    // 字数过滤逻辑 - 修复单位解析问题
+    function filterByWordCount(books, range) {
+        return books.filter(book => {
+            // 使用正则提取数字部分
+            const wordCountMatch = book.wordCount.match(/\d+/);
+            if (!wordCountMatch) return false;
+
+            const wordCountNum = parseInt(wordCountMatch[0]);
+
+            switch(range) {
+                case '30万字以下':
+                    return wordCountNum < 30;
+                case '30-50万字':
+                    return wordCountNum >= 30 && wordCountNum <= 50;
+                case '50-100万字':
+                    return wordCountNum > 50 && wordCountNum <= 100;
+                case '100-200万字':
+                    return wordCountNum > 100 && wordCountNum <= 200;
+                case '200万字以上':
+                    return wordCountNum > 200;
+                default:
+                    return true;
+            }
+        });
+    }
+
+    // 排序逻辑 - 完善所有排序类型
+    function sortBooks(books, sortType) {
+        const sorted = [...books];
+
+        switch (sortType) {
+            case 'rating':
+                return sorted.sort((a, b) => b.rating - a.rating);
+            case 'views':
+                return sorted.sort((a, b) => parseViews(b.views) - parseViews(a.views));
+            case 'favorites':
+                return sorted.sort((a, b) => b.favorites - a.favorites);
+            case 'new':
+                return sorted.sort((a, b) => new Date(b.updateTime) - new Date(a.updateTime));
+            case 'hot':
+                // 热门度 = 阅读量权重(0.5) + 收藏量权重(0.3) + 评分权重(0.2)
+                return sorted.sort((a, b) => {
+                    const hotScoreA = (parseViews(a.views) * 0.5) + (a.favorites * 0.3) + (a.rating * 0.2);
+                    const hotScoreB = (parseViews(b.views) * 0.5) + (b.favorites * 0.3) + (b.rating * 0.2);
+                    return hotScoreB - hotScoreA;
+                });
+            default:
+                return sorted;
+        }
+    }
+
+    // 解析阅读量（处理"亿"和"万"单位）
+    function parseViews(viewsStr) {
+        if (viewsStr.includes('亿')) {
+            return parseFloat(viewsStr) * 10000;
+        } else if (viewsStr.includes('万')) {
+            return parseFloat(viewsStr);
+        }
+        return parseFloat(viewsStr) || 0;
+    }
+
+    // 渲染书籍列表 - 增加分页和懒加载
+    function renderBooks(books) {
+        // 计算当前页显示的书籍
+        const startIndex = (filterState.currentPage - 1) * filterState.pageSize;
+        const endIndex = startIndex + filterState.pageSize;
+        const currentPageBooks = books.slice(startIndex, endIndex);
+
+        // 更新结果计数
+        resultCountEl.textContent = books.length;
+
+        // 清空列表
+        booksListEl.innerHTML = '';
+
+        // 显示/隐藏空状态和分页
+        if (books.length === 0) {
+            emptyStateEl.classList.remove('hidden');
+            paginationEl.classList.add('hidden');
+            renderPopularRecommendations();
+            return;
+        }
+
+        emptyStateEl.classList.add('hidden');
+        paginationEl.classList.remove('hidden');
+
+        // 生成书籍项
+        currentPageBooks.forEach(book => {
+            const bookEl = document.createElement('div');
+            bookEl.className = 'card-hover';
+            bookEl.innerHTML = `
+                     <a th:href="@{/book/${book.id}}" class="block">
+                        <div class="relative mb-3 rounded-lg overflow-hidden">
+                        <a href="/book-detail">
+                            <img data-id="${book.id}"
+                                 data-src="/images/placeholder-${book.id}.jpg"
+                                 alt="${book.title}"
+                                 class="book-cover w-full lazy-load"
+                                 id="${book.coverId}" />
+                            <!-- 使用data-src实现懒加载 -->
+                        </a>
+                            <div class="absolute top-2 left-2 bg-blue-600 px-2 py-1 rounded text-xs font-medium">
+                                ${book.status}
+                            </div>
+                            <div class="absolute top-2 right-2 bg-yellow-500 text-slate-900 px-2 py-1 rounded text-xs font-bold">
+                                ${book.rating}
+                            </div>
+                        </div>
+                        <h4 class="font-medium mb-1 truncate">${book.title}</h4>
+                        <p class="text-sm text-slate-400 mb-1 truncate">${book.author}</p>
+                        <div class="flex items-center justify-between text-xs text-slate-500">
+                            <span>${book.category}</span>
+                            <span>${book.views}</span>
+                        </div>
+                        <div class="flex flex-wrap gap-1 mt-2">
+                            ${book.tags.slice(0, 2).map(tag => `
+                                <span class="bg-slate-700 px-2 py-0.5 rounded text-xs">
+                                    ${tag}
+                                </span>
+                            `).join('')}
+                            ${book.tags.length > 2 ? `<span class="bg-slate-700 px-2 py-0.5 rounded text-xs">+${book.tags.length - 2}</span>` : ''}
+                        </div>
+                    </a>
+                `;
+            booksListEl.appendChild(bookEl);
+        });
+
+        // 重新初始化图标
+        lucide.createIcons();
+
+        // 触发懒加载检查
+        checkLazyLoad();
+    }
+
+    // 更新分页控件
+    function updatePagination(totalPages) {
+        // 清空页码容器
+        pageNumbersEl.innerHTML = '';
+
+        // 计算显示的页码范围（最多显示5个页码）
+        let startPage = Math.max(1, filterState.currentPage - 2);
+        let endPage = Math.min(totalPages, startPage + 4);
+
+        // 调整起始页码，确保显示5个页码（除非总页数少于5）
+        if (endPage - startPage < 4 && totalPages > 5) {
+            startPage = Math.max(1, endPage - 4);
+        }
+
+        // 添加页码按钮
+        for (let i = startPage; i <= endPage; i++) {
+            const pageBtn = document.createElement('button');
+            pageBtn.className = `px-4 py-2 rounded-lg transition-colors ${i === filterState.currentPage ? 'bg-blue-600 font-medium' : 'bg-slate-800 hover:bg-slate-700'}`;
+            pageBtn.textContent = i;
+            pageBtn.addEventListener('click', () => {
+                filterState.currentPage = i;
+                applyAndRenderFilters();
+                scrollToTop();
+            });
+            pageNumbersEl.appendChild(pageBtn);
+        }
+
+        // 更新上一页/下一页按钮状态
+        prevPageBtn.disabled = filterState.currentPage === 1;
+        nextPageBtn.disabled = filterState.currentPage === totalPages || totalPages === 0;
+    }
+
+    // 更新已选筛选标签
+    function updateSelectedFilters() {
+        selectedFiltersEl.innerHTML = '';
+        const hasFilters = [];
+
+        // 添加分类标签
+        if (filterState.category !== '全部') {
+            hasFilters.push(true);
+            selectedFiltersEl.appendChild(createFilterTag('分类', filterState.category, 'category'));
+        }
+
+        // 添加状态标签
+        if (filterState.status !== '全部') {
+            hasFilters.push(true);
+            selectedFiltersEl.appendChild(createFilterTag('状态', filterState.status, 'status'));
+        }
+
+        // 添加字数标签
+        if (filterState.wordCount !== '全部') {
+            hasFilters.push(true);
+            selectedFiltersEl.appendChild(createFilterTag('字数', filterState.wordCount, 'wordcount'));
+        }
+
+        // 添加搜索标签
+        if (filterState.searchQuery) {
+            hasFilters.push(true);
+            selectedFiltersEl.appendChild(createFilterTag('搜索', filterState.searchQuery, 'search'));
+        }
+
+        // 显示/隐藏已选筛选区域
+        if (hasFilters.length > 0) {
+            selectedFiltersEl.classList.remove('hidden');
+        } else {
+            selectedFiltersEl.classList.add('hidden');
+        }
+    }
+
+    // 创建筛选标签
+    function createFilterTag(label, value, type) {
+        const tag = document.createElement('div');
+        tag.className = 'selected-filter-tag px-3 py-1 rounded-lg text-sm';
+        tag.innerHTML = `
+            <span>${label}: ${value}</span>
+            <i data-lucide="x" class="w-3 h-3 tag-close"></i>
+        `;
+
+        // 点击关闭按钮移除筛选
+        tag.querySelector('.tag-close').addEventListener('click', () => {
+            switch (type) {
+                case 'category':
+                    filterState.category = '全部';
+                    setActiveFilter(document.querySelector('#categoryFilters button[data-category="全部"]'), '#categoryFilters');
+                    break;
+                case 'status':
+                    filterState.status = '全部';
+                    setActiveFilter(document.querySelector('#statusFilters button[data-status="全部"]'), '#statusFilters');
+                    break;
+                case 'wordcount':
+                    filterState.wordCount = '全部';
+                    setActiveFilter(document.querySelector('#wordCountFilters button[data-wordcount="全部"]'), '#wordCountFilters');
+                    break;
+                case 'search':
+                    filterState.searchQuery = '';
+                    searchInputEl.value = '';
+                    break;
+            }
+
+            filterState.currentPage = 1;
+            applyAndRenderFilters();
+        });
+
+        return tag;
+    }
+
+    // 渲染热门推荐（空状态时）
+    function renderPopularRecommendations() {
+        const recommendContainer = emptyStateEl.querySelector('.grid');
+        recommendContainer.innerHTML = '';
+
+        // 获取热门推荐书籍（按热门度排序前3本）
+        const popularBooks = [...allBooks]
+            .sort((a, b) => (parseViews(b.views) - parseViews(a.views)))
+            .slice(0, 3);
+
+        popularBooks.forEach(book => {
+            const bookEl = document.createElement('div');
+            bookEl.className = 'card-hover';
+            bookEl.innerHTML = `
+                <a th:href="@{/book/${book.id}}" class="block">
+                    <img data-src="/images/placeholder-${book.id}.jpg"
+                         alt="${book.title}"
+                         class="book-cover w-full rounded-lg lazy-load" />
+                    <h4 class="font-medium text-sm mt-2 line-clamp-1">${book.title}</h4>
+                </a>
+            `;
+            recommendContainer.appendChild(bookEl);
+        });
+
+        checkLazyLoad();
+    }
+
+    // 重置筛选条件
+    function resetFilters() {
+        // 重置筛选状态
+        filterState = {
+            ...filterState,
+            category: '全部',
+            status: '全部',
+            wordCount: '全部',
+            searchQuery: '',
+            sortBy: 'hot',
+            currentPage: 1
+        };
+
+        // 重置UI
+        setActiveFilter(document.querySelector('#categoryFilters button[data-category="全部"]'), '#categoryFilters');
+        setActiveFilter(document.querySelector('#statusFilters button[data-status="全部"]'), '#statusFilters');
+        setActiveFilter(document.querySelector('#wordCountFilters button[data-wordcount="全部"]'), '#wordCountFilters');
+        searchInputEl.value = '';
+        sortByEl.value = 'hot';
+
+        // 重新应用筛选
+        applyAndRenderFilters();
+    }
+
+    // 初始化图片懒加载
+    function initLazyLoading() {
+        // 初始检查可见图片
+        checkLazyLoad();
+
+        // 滚动时检查
+        window.addEventListener('scroll', throttle(checkLazyLoad, 200));
+        window.addEventListener('resize', throttle(checkLazyLoad, 200));
+    }
+
+    // 图片加载函数 - 增加错误处理和占位符
+    function loadImage(elementId, bookName) {
+        const imgElement = document.getElementById(elementId);
+        if (!imgElement) {
+            console.error(`未找到ID为${elementId}的图片元素`);
+            return;
+        }
+
+        // 1. 先显示占位图，避免骨架屏消失后空白
+        imgElement.src = '/images/placeholder.jpg'; // 确保有默认占位图
+        imgElement.classList.add('skeleton');
+
+        // 2. 如果有data-src，优先尝试本地路径
+        if (imgElement.dataset.src) {
+            const testImg = new Image();
+            testImg.src = imgElement.dataset.src;
+            testImg.onload = () => {
+                // 本地路径存在则直接使用
+                imgElement.classList.remove('skeleton');
+                imgElement.src = imgElement.dataset.src;
+                imgElement.classList.add('loaded');
+            };
+            testImg.onerror = () => {
+                // 本地路径不存在再调用接口
+                fetchRemoteImage(imgElement, bookName);
+            };
+        } else {
+            // 没有本地路径则直接调用接口
+            fetchRemoteImage(imgElement, bookName);
+        }
+    }
+    function fetchRemoteImage(imgElement, bookName) {
+        // 3. 处理接口调用，增加超时机制
+        const timeoutId = setTimeout(() => {
+            handleImageError(imgElement, `加载超时: 《${bookName}》`);
+        }, 5000); // 5秒超时
+
+        fetch(`/ebook?name=${encodeURIComponent(bookName)}`)
+            .then(response => {
+                clearTimeout(timeoutId); // 清除超时
+                if (!response.ok) throw new Error(`HTTP错误: ${response.status}`);
+                return response.text();
+            })
+            .then(imageUrl => {
+                // 验证图片URL有效性
+                if (imageUrl && (imageUrl.startsWith('http') || imageUrl.startsWith('/'))) {
+                    const testImg = new Image();
+                    testImg.src = imageUrl;
+                    testImg.onload = () => {
+                        imgElement.classList.remove('skeleton');
+                        imgElement.src = imageUrl;
+                        imgElement.classList.add('loaded');
+                    };
+                    testImg.onerror = () => {
+                        handleImageError(imgElement, `无效图片URL: ${imageUrl}`);
+                    };
+                } else {
+                    throw new Error(`返回无效URL: ${imageUrl}`);
+                }
+            })
+            .catch(error => {
+                clearTimeout(timeoutId);
+                handleImageError(imgElement, error.message);
+            });
+    }
+    function handleImageError(imgElement, errorMsg) {
+        console.error(`图片加载失败: ${errorMsg}`);
+        imgElement.classList.remove('skeleton');
+        imgElement.src = '/images/error.jpg'; // 错误占位图
+        imgElement.classList.add('loaded', 'error-img'); // 标记错误状态
+    }
+    function getBookTitleById(id) {
+        // 容错处理：如果id不是数字，直接返回空
+        if (isNaN(id)) return '';
+        const book = allBooks.find(b => b.id === Number(id));
+        return book ? book.title : '';
+    }
+
+    // 修复checkLazyLoad中的ID解析逻辑
+    function checkLazyLoad() {
+        const lazyImages = document.querySelectorAll('.lazy-load:not(.loaded)');
+
+        lazyImages.forEach(img => {
+            const rect = img.getBoundingClientRect();
+            if (rect.top <= window.innerHeight + 100 && rect.bottom >= 0) {
+                // 从coverId中提取数字ID（如"guimiImage"可能对应id=1）
+                // 更可靠的方式：直接从data-id获取（需要在HTML中添加）
+                const bookId = img.dataset.id || img.id.replace(/[^\d]/g, '');
+                loadImage(img.id, getBookTitleById(bookId));
+                img.classList.add('loaded');
+            }
+        });
+    }
+    function cacheData(filteredBooks) {
+        const data = {
+            filteredBooks,
+            totalPages: Math.ceil(filteredBooks.length / filterState.pageSize),
+            timestamp: Date.now()
+        };
+        localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+    }
+
+    // 获取缓存数据
+    function getCachedData() {
+        const cached = localStorage.getItem(CACHE_KEY);
+        if (!cached) return null;
+
+        const data = JSON.parse(cached);
+        // 检查是否过期
+        if (Date.now() - data.timestamp > CACHE_EXPIRY) {
+            localStorage.removeItem(CACHE_KEY);
+            return null;
+        }
+
+        return data;
+    }
+
+    // 工具函数：防抖
+    function debounce(func, wait) {
+        let timeout;
+        return function(...args) {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(this, args), wait);
+        };
+    }
+
+    // 工具函数：节流
+    function throttle(func, limit) {
+        let lastCall = 0;
+        return function(...args) {
+            const now = Date.now();
+            if (now - lastCall >= limit) {
+                lastCall = now;
+                func.apply(this, args);
+            }
+        };
+    }
+
+    // 滚动到顶部
+    function scrollToTop() {
+        window.scrollTo({
+            top: booksListEl.offsetTop - 20,
+            behavior: 'smooth'
+        });
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录 - 书海阁</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+
+        * {
+            font-family: 'Noto Sans SC', sans-serif;
+        }
+
+        :root {
+            --color-primary: #1e40af;
+            --color-primary-light: #3b82f6;
+            --color-accent: #10b981;
+            --color-bg-dark: #0f172a;
+            --color-bg-darker: #020617;
+            --color-bg-card: #1e293b;
+            --color-text: #f1f5f9;
+            --color-text-muted: #94a3b8;
+        }
+
+        body {
+            background: var(--color-bg-dark);
+            color: var(--color-text);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #3b82f6 0%, #10b981 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* 主题样式 */
+        body.theme-light {
+            background: #f8fafc;
+            color: #1e293b;
+        }
+
+        body.theme-light .bg-slate-900 {
+            background: #ffffff !important;
+            border-color: #e2e8f0 !important;
+        }
+
+        body.theme-light .bg-slate-800 {
+            background: #f1f5f9 !important;
+        }
+
+        body.theme-light .text-slate-300,
+        body.theme-light .text-slate-400 {
+            color: #64748b !important;
+        }
+
+        body.theme-light .text-white {
+            color: #1e293b !important;
+        }
+
+        .form-input:focus {
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+        }
+
+        .slide-enter {
+            animation: slideIn 0.3s ease forwards;
+        }
+
+        .slide-exit {
+            animation: slideOut 0.3s ease forwards;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(-100%); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+<div class="min-h-screen flex items-center justify-center p-4">
+    <!-- 主容器 -->
+    <div class="w-full max-w-md relative overflow-hidden">
+        <!-- 卡片容器 -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden">
+            <!-- 标题区域 -->
+            <div class="p-6 border-b border-slate-800 text-center">
+                <h1 class="text-2xl font-bold mb-1 gradient-text">书海阁</h1>
+                <p class="text-slate-400 text-sm" id="formTitle">欢迎回来，请登录</p>
+            </div>
+
+            <!-- 表单容器 -->
+            <div class="relative min-h-[400px]">
+                <!-- 登录表单 -->
+                <form id="loginForm" class="p-6 absolute inset-0 w-full">
+                    <div class="space-y-4">
+                        <div>
+                            <label for="loginEmail" class="block text-sm font-medium text-slate-300 mb-1">邮箱</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i data-lucide="mail" class="w-5 h-5 text-slate-400"></i>
+                                </div>
+                                <input type="email" id="loginEmail"
+                                       class="form-input w-full pl-10 pr-3 py-3 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:border-blue-500 transition-colors text-white"
+                                       placeholder="请输入您的邮箱" required>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="loginPassword" class="block text-sm font-medium text-slate-300 mb-1">密码</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i data-lucide="lock" class="w-5 h-5 text-slate-400"></i>
+                                </div>
+                                <input type="password" id="loginPassword"
+                                       class="form-input w-full pl-10 pr-10 py-3 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:border-blue-500 transition-colors text-white"
+                                       placeholder="请输入您的密码" required>
+                                <button type="button" class="toggle-password absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-white" data-target="loginPassword">
+                                    <i data-lucide="eye" class="w-5 h-5"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" class="rounded border-slate-700 text-blue-600 focus:ring-blue-500 bg-slate-800">
+                                <span class="text-sm text-slate-400">记住我</span>
+                            </label>
+                            <a href="/forgetPW" class="text-sm text-blue-500 hover:text-blue-400 transition-colors">忘记密码?</a>
+                        </div>
+
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors">
+                            登录
+                        </button>
+
+                        <div class="relative flex items-center justify-center">
+                            <div class="absolute inset-0 flex items-center">
+                                <div class="w-full border-t border-slate-800"></div>
+                            </div>
+                            <div class="relative z-10 px-4 bg-slate-900 text-sm text-slate-500">
+                                其他登录方式
+                            </div>
+                        </div>
+
+                        <div class="flex gap-4">
+                            <button type="button" class="flex-1 flex items-center justify-center gap-2 py-2.5 border border-slate-700 rounded-lg hover:bg-slate-800 transition-colors">
+                                <i data-lucide="github" class="w-5 h-5"></i>
+                                <span class="text-sm">GitHub</span>
+                            </button>
+                            <button type="button" class="flex-1 flex items-center justify-center gap-2 py-2.5 border border-slate-700 rounded-lg hover:bg-slate-800 transition-colors">
+                                <i data-lucide="mail" class="w-5 h-5"></i>
+                                <span class="text-sm">邮箱</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 text-center">
+                        <p class="text-slate-400 text-sm">
+                            还没有账号?
+                            <button type="button" id="showRegisterBtn" class="text-blue-500 hover:text-blue-400 transition-colors font-medium">
+                                立即注册
+                            </button>
+                        </p>
+                    </div>
+                </form>
+
+                <!-- 注册表单 -->
+                <form id="registerForm" class="p-6 absolute inset-0 w-full translate-x-full opacity-0">
+                    <div class="space-y-4">
+                        <div>
+                            <label for="registerName" class="block text-sm font-medium text-slate-300 mb-1">用户名</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i data-lucide="user" class="w-5 h-5 text-slate-400"></i>
+                                </div>
+                                <input type="text" id="registerName"
+                                       class="form-input w-full pl-10 pr-3 py-3 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:border-blue-500 transition-colors text-white"
+                                       placeholder="请输入用户名" required>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="registerEmail" class="block text-sm font-medium text-slate-300 mb-1">邮箱</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i data-lucide="mail" class="w-5 h-5 text-slate-400"></i>
+                                </div>
+                                <input type="email" id="registerEmail"
+                                       class="form-input w-full pl-10 pr-3 py-3 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:border-blue-500 transition-colors text-white"
+                                       placeholder="请输入您的邮箱" required>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="registerPassword" class="block text-sm font-medium text-slate-300 mb-1">密码</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i data-lucide="lock" class="w-5 h-5 text-slate-400"></i>
+                                </div>
+                                <input type="password" id="registerPassword"
+                                       class="form-input w-full pl-10 pr-10 py-3 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:border-blue-500 transition-colors text-white"
+                                       placeholder="请设置密码" required>
+                                <button type="button" class="toggle-password absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-white" data-target="registerPassword">
+                                    <i data-lucide="eye" class="w-5 h-5"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="registerConfirmPassword" class="block text-sm font-medium text-slate-300 mb-1">确认密码</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i data-lucide="lock" class="w-5 h-5 text-slate-400"></i>
+                                </div>
+                                <input type="password" id="registerConfirmPassword"
+                                       class="form-input w-full pl-10 pr-10 py-3 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:border-blue-500 transition-colors text-white"
+                                       placeholder="请再次输入密码" required>
+                                <button type="button" class="toggle-password absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-white" data-target="registerConfirmPassword">
+                                    <i data-lucide="eye" class="w-5 h-5"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <label class="flex items-start gap-2 cursor-pointer">
+                            <input type="checkbox" class="mt-1 rounded border-slate-700 text-blue-600 focus:ring-blue-500 bg-slate-800" required>
+                            <span class="text-sm text-slate-400">
+                                我已阅读并同意<a href="#" class="text-blue-500 hover:underline">用户协议</a>和<a href="#" class="text-blue-500 hover:underline">隐私政策</a>
+                            </span>
+                        </label>
+                        <a href="/log">
+                            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors">
+                                注册
+                            </button>
+                        </a>
+                    </div>
+
+                    <div class="mt-6 text-center">
+                        <p class="text-slate-400 text-sm">
+                            已有账号?
+                            <button type="button" id="showLoginBtn" class="text-blue-500 hover:text-blue-400 transition-colors font-medium">
+                                立即登录
+                            </button>
+                        </p>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 返回按钮 -->
+        <div class="mt-6 text-center">
+            <a href="/" class="inline-flex items-center gap-1 text-slate-400 hover:text-white text-sm transition-colors">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                <span>返回首页</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 初始化图标
+        lucide.createIcons();
+
+        // 获取DOM元素
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const formTitle = document.getElementById('formTitle');
+        const showRegisterBtn = document.getElementById('showRegisterBtn');
+        const showLoginBtn = document.getElementById('showLoginBtn');
+        const togglePasswordBtns = document.querySelectorAll('.toggle-password');
+
+        // 切换表单
+        function switchToRegister() {
+            formTitle.textContent = "创建账号，开始阅读";
+            loginForm.classList.add('slide-exit');
+            setTimeout(() => {
+                loginForm.classList.remove('slide-exit');
+                loginForm.classList.add('translate-x-full', 'opacity-0');
+                registerForm.classList.remove('translate-x-full', 'opacity-0');
+                registerForm.classList.add('slide-enter');
+                setTimeout(() => {
+                    registerForm.classList.remove('slide-enter');
+                }, 300);
+            }, 300);
+        }
+
+        function switchToLogin() {
+            formTitle.textContent = "欢迎回来，请登录";
+            registerForm.classList.add('slide-exit');
+            setTimeout(() => {
+                registerForm.classList.remove('slide-exit');
+                registerForm.classList.add('translate-x-full', 'opacity-0');
+                loginForm.classList.remove('translate-x-full', 'opacity-0');
+                loginForm.classList.add('slide-enter');
+                setTimeout(() => {
+                    loginForm.classList.remove('slide-enter');
+                }, 300);
+            }, 300);
+        }
+
+        // 切换密码可见性
+        togglePasswordBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const targetId = this.getAttribute('data-target');
+                const passwordInput = document.getElementById(targetId);
+                const icon = this.querySelector('i');
+
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    icon.setAttribute('data-lucide', 'eye-off');
+                } else {
+                    passwordInput.type = 'password';
+                    icon.setAttribute('data-lucide', 'eye');
+                }
+                // 重新渲染图标
+                lucide.createIcons(icon);
+            });
+        });
+
+        // 表单提交处理
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            // 这里添加登录逻辑
+            alert('登录功能待实现');
+        });
+
+        registerForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            // 这里添加注册逻辑
+            const password = document.getElementById('registerPassword').value;
+            const confirmPassword = document.getElementById('registerConfirmPassword').value;
+
+            if (password !== confirmPassword) {
+                alert('两次输入的密码不一致');
+                return;
+            }
+            alert('注册功能待实现');
+        });
+
+        // 绑定事件
+        showRegisterBtn.addEventListener('click', switchToRegister);
+        showLoginBtn.addEventListener('click', switchToLogin);
+
+        // 恢复主题设置
+        const savedTheme = localStorage.getItem('reading-theme');
+        if (savedTheme) {
+            document.body.classList.add(`theme-${savedTheme}`);
+        }
+    });
+</script>
+</body>
+</html>

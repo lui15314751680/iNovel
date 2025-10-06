@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>书海阁 - 在线小说阅读平台</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+
+    * {
+      font-family: 'Noto Sans SC', sans-serif;
+    }
+
+    :root {
+      --color-primary: #1e40af;
+      --color-primary-light: #3b82f6;
+      --color-accent: #10b981;
+      --color-bg-dark: #0f172a;
+      --color-bg-darker: #020617;
+      --color-bg-card: #1e293b;
+      --color-text: #f1f5f9;
+      --color-text-muted: #94a3b8;
+    }
+
+    body {
+      background: var(--color-bg-dark);
+      color: var(--color-text);
+    }
+
+    .gradient-text {
+      background: linear-gradient(135deg, #3b82f6 0%, #10b981 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .card-hover {
+      transition: all 0.3s ease;
+    }
+
+    .card-hover:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+    }
+
+    .book-cover {
+      aspect-ratio: 3/4;
+      object-fit: cover;
+    }
+
+    .nav-link {
+      position: relative;
+      transition: color 0.3s ease;
+    }
+
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--color-primary-light);
+      transition: width 0.3s ease;
+    }
+
+    .nav-link:hover::after {
+      width: 100%;
+    }
+
+    .banner-gradient {
+      background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);
+    }
+
+    .banner-item {
+      display: none;
+      position: absolute;
+      inset: 0;
+      transition: opacity 0.5s ease;
+    }
+
+    .banner-item.active {
+      display: block;
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+<div class="min-h-screen">
+  <!-- 顶部导航 -->
+  <nav class="bg-slate-900 border-b border-slate-800 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <!-- Logo -->
+        <div class="flex items-center gap-8">
+          <a href="/" class="flex items-center gap-2">
+            <i data-lucide="book-open" class="w-8 h-8 text-blue-500"></i>
+            <span class="text-2xl font-bold gradient-text">书海阁</span>
+          </a>
+
+          <!-- 主导航 -->
+          <div class="hidden md:flex items-center gap-6">
+            <a href="/index" class="text-white text-sm font-medium">首页</a>
+            <a href="/category" class="nav-link text-slate-300 hover:text-white text-sm font-medium">分类</a>
+            <a href="/author-center" class="nav-link text-slate-300 hover:text-white text-sm font-medium">作者中心</a>
+            <a href="/user-center" class="text-slate-300 hover:text-white text-sm font-medium">个人中心</a>
+          </div>
+        </div>
+
+        <!-- 搜索和用户 -->
+        <div class="flex items-center gap-4">
+          <!-- 搜索框 -->
+          <div class="hidden sm:flex items-center bg-slate-800 rounded-lg px-4 py-2 w-64">
+            <i data-lucide="search" class="w-4 h-4 text-slate-400"></i>
+            <input
+                    type="text"
+                    placeholder="搜索书名、作者"
+                    class="bg-transparent border-none outline-none ml-2 text-sm text-slate-300 placeholder-slate-500 w-full"
+            />
+          </div>
+
+          <div class="flex items-center gap-3">
+            <button class="text-slate-300 hover:text-white">
+              <i data-lucide="bell" class="w-5 h-5"></i>
+            </button>
+            <a href="/log">
+              <button class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                <i data-lucide="user" class="w-4 h-4"></i>
+                <span class="hidden sm:inline">登录</span>
+              </button>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- 主要内容 -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- 轮播图 -->
+    <div class="relative mb-12 rounded-2xl overflow-hidden banner-gradient">
+      <div class="relative h-96">
+        <div class="banner-item active">
+          <div class="flex items-center h-full px-12">
+            <div class="flex-1 max-w-2xl">
+              <h2 class="text-5xl font-bold mb-4 text-white">斗破苍穹</h2>
+              <p class="text-slate-300 text-lg mb-2">作者：天蚕土豆</p>
+              <p class="text-slate-400 mb-6 leading-relaxed">这里是斗气的世界，没有花俏艳丽的魔法，有的，仅仅是繁衍到巅峰的斗气！</p>
+              <div class="flex gap-4">
+                <a href="/book-detail">
+                  <button class="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-medium transition-colors">
+                    立即阅读
+                  </button>
+                </a>
+                <a href="/user-center">
+                  <button class="bg-slate-700 hover:bg-slate-600 px-6 py-3 rounded-lg font-medium transition-colors">
+                    加入书架
+                  </button>
+                </a>
+              </div>
+            </div>
+            <div class="hidden lg:block flex-1">
+              <img id="doupoImage"
+                   height="400"
+                   width="800"
+                   alt="斗破苍穹"
+                   class="w-full h-80 object-cover rounded-xl shadow-2xl"
+                   src="/templates/images/default.webp">
+            </div>
+          </div>
+        </div>
+
+        <div class="banner-item">
+          <div class="flex items-center h-full px-12">
+            <div class="flex-1 max-w-2xl">
+              <h2 class="text-5xl font-bold mb-4 text-white">完美世界</h2>
+              <p class="text-slate-300 text-lg mb-2">作者：辰东</p>
+              <p class="text-slate-400 mb-6 leading-relaxed">一粒尘可填海，一根草斩尽日月星辰，弹指间天翻地覆。</p>
+              <div class="flex gap-4">
+                <a href="/book-detail">
+                  <button class="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-medium transition-colors">
+                    立即阅读
+                  </button>
+                </a>
+                <button class="bg-slate-700 hover:bg-slate-600 px-6 py-3 rounded-lg font-medium transition-colors">
+                  加入书架
+                </button>
+              </div>
+            </div>
+            <div class="hidden lg:block flex-1">
+              <img id="wanmeiImage"
+                   height="400"
+                   width="800"
+                   alt="完美世界"
+                   class="w-full h-80 object-cover rounded-xl shadow-2xl"
+                   src="/templates/images/default.webp">
+            </div>
+          </div>
+        </div>
+
+        <div class="banner-item">
+          <div class="flex items-center h-full px-12">
+            <div class="flex-1 max-w-2xl">
+              <h2 class="text-5xl font-bold mb-4 text-white">遮天</h2>
+              <p class="text-slate-300 text-lg mb-2">作者：辰东</p>
+              <p class="text-slate-400 mb-6 leading-relaxed">冰冷与黑暗并存的宇宙深处，九具庞大的龙尸拉着一口青铜古棺，亘古长存。</p>
+              <div class="flex gap-4">
+                <button class="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-medium transition-colors">
+                  立即阅读
+                </button>
+                <button class="bg-slate-700 hover:bg-slate-600 px-6 py-3 rounded-lg font-medium transition-colors">
+                  加入书架
+                </button>
+              </div>
+            </div>
+            <div class="hidden lg:block flex-1">
+              <img id="zhetianImage"
+                   height="400"
+                   width="800"
+                   alt="斗破苍穹"
+                   class="w-full h-80 object-cover rounded-xl shadow-2xl"
+                   src="/templates/images/default.webp">
+            </div>
+          </div>
+        </div>
+
+        <!-- 轮播控制 -->
+        <button id="prevBanner" class="absolute left-4 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 p-3 rounded-full transition-colors">
+          <i data-lucide="chevron-left" class="w-6 h-6"></i>
+        </button>
+        <button id="nextBanner" class="absolute right-4 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 p-3 rounded-full transition-colors">
+          <i data-lucide="chevron-right" class="w-6 h-6"></i>
+        </button>
+
+        <!-- 指示器 -->
+        <div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
+          <button class="banner-dot w-8 h-2 rounded-full bg-blue-500 transition-all" data-index="0"></button>
+          <button class="banner-dot w-2 h-2 rounded-full bg-white/50 transition-all" data-index="1"></button>
+          <button class="banner-dot w-2 h-2 rounded-full bg-white/50 transition-all" data-index="2"></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 分类导航 -->
+    <div class="mb-12">
+      <h3 class="text-2xl font-bold mb-6">热门分类</h3>
+      <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4">
+        <a href="/category" class="bg-slate-800 hover:bg-slate-700 rounded-xl p-6 text-center transition-all card-hover">
+          <i data-lucide="Sparkles" class="w-8 h-8 mx-auto mb-3 text-blue-400"></i>
+          <div class="font-medium">玄幻</div>
+        </a>
+        <a href="/category" class="bg-slate-800 hover:bg-slate-700 rounded-xl p-6 text-center transition-all card-hover">
+          <i data-lucide="Sword" class="w-8 h-8 mx-auto mb-3 text-purple-400"></i>
+          <div class="font-medium">仙侠</div>
+        </a>
+        <a href="/category" class="bg-slate-800 hover:bg-slate-700 rounded-xl p-6 text-center transition-all card-hover">
+          <i data-lucide="Building2" class="w-8 h-8 mx-auto mb-3 text-green-400"></i>
+          <div class="font-medium">都市</div>
+        </a>
+        <a href="/category" class="bg-slate-800 hover:bg-slate-700 rounded-xl p-6 text-center transition-all card-hover">
+          <i data-lucide="book-open" class="w-8 h-8 mx-auto mb-3 text-yellow-400"></i>
+          <div class="font-medium">历史</div>
+        </a>
+        <a href="/category" class="bg-slate-800 hover:bg-slate-700 rounded-xl p-6 text-center transition-all card-hover">
+          <i data-lucide="Rocket" class="w-8 h-8 mx-auto mb-3 text-cyan-400"></i>
+          <div class="font-medium">科幻</div>
+        </a>
+        <a href="/category" class="bg-slate-800 hover:bg-slate-700 rounded-xl p-6 text-center transition-all card-hover">
+          <i data-lucide="Gamepad2" class="w-8 h-8 mx-auto mb-3 text-pink-400"></i>
+          <div class="font-medium">游戏</div>
+        </a>
+        <a href="/category" class="bg-slate-800 hover:bg-slate-700 rounded-xl p-6 text-center transition-all card-hover">
+          <i data-lucide="Swords" class="w-8 h-8 mx-auto mb-3 text-red-400"></i>
+          <div class="font-medium">武侠</div>
+        </a>
+        <a href="/category" class="bg-slate-800 hover:bg-slate-700 rounded-xl p-6 text-center transition-all card-hover">
+          <i data-lucide="Eye" class="w-8 h-8 mx-auto mb-3 text-indigo-400"></i>
+          <div class="font-medium">悬疑</div>
+        </a>
+      </div>
+    </div>
+
+    <!-- 热门推荐 -->
+    <div class="mb-12">
+      <div class="flex items-center justify-between mb-6">
+        <h3 class="text-2xl font-bold">热门推荐</h3>
+        <a href="/category" class="text-blue-400 hover:text-blue-300 text-sm flex items-center gap-1">
+          查看更多
+          <i data-lucide="chevron-right" class="w-4 h-4"></i>
+        </a>
+      </div>
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6">
+        <div class="card-hover">
+          <a href="/book-detail">
+            <div class="relative mb-3 rounded-lg overflow-hidden">
+              <img id="guimiImage"
+                   height="400"
+                   width="800"
+                   alt="诡秘之主"
+                   class="book-cover w-full"
+                   src="/templates/images/default.webp">
+              <div class="absolute top-2 right-2 bg-blue-600 px-2 py-1 rounded text-xs font-medium">
+                完结
+              </div>
+            </div>
+            <h4 class="font-medium mb-1 truncate">诡秘之主</h4>
+            <p class="text-sm text-slate-400 mb-1 truncate">爱潜水的乌贼</p>
+            <div class="flex items-center justify-between text-xs text-slate-500">
+              <span>玄幻</span>
+              <span>1.2亿</span>
+            </div>
+          </a>
+        </div>
+
+        <div class="card-hover">
+          <a href="/book-detail">
+            <div class="relative mb-3 rounded-lg overflow-hidden">
+              <img id="dafImage"
+                   height="400"
+                   width="800"
+                   alt="大奉打更人"
+                   class="book-cover w-full"
+                   src="/templates/images/default.webp">
+              <div class="absolute top-2 right-2 bg-blue-600 px-2 py-1 rounded text-xs font-medium">
+                连载
+              </div>
+            </div>
+            <h4 class="font-medium mb-1 truncate">大奉打更人</h4>
+            <p class="text-sm text-slate-400 mb-1 truncate">卖报小郎君</p>
+            <div class="flex items-center justify-between text-xs text-slate-500">
+              <span>仙侠</span>
+              <span>9800万</span>
+            </div>
+          </a>
+        </div>
+
+        <div class="card-hover">
+          <a href="/book-detail">
+            <div class="relative mb-3 rounded-lg overflow-hidden">
+              <img id="mushImage"
+                   height="400"
+                   width="800"
+                   alt="牧神记"
+                   class="book-cover w-full"
+                   src="/templates/images/default.webp">
+              <div class="absolute top-2 right-2 bg-blue-600 px-2 py-1 rounded text-xs font-medium">
+                完结
+              </div>
+            </div>
+            <h4 class="font-medium mb-1 truncate">牧神记</h4>
+            <p class="text-sm text-slate-400 mb-1 truncate">宅猪</p>
+            <div class="flex items-center justify-between text-xs text-slate-500">
+              <span>玄幻</span>
+              <span>8500万</span>
+            </div>
+          </a>
+        </div>
+
+        <div class="card-hover">
+          <a href="/book-detail">
+            <div class="relative mb-3 rounded-lg overflow-hidden">
+              <img id="fanrenImage"
+                   height="400"
+                   width="800"
+                   alt="凡人修仙传"
+                   class="book-cover w-full"
+                   src="/templates/images/default.webp">
+              <div class="absolute top-2 right-2 bg-blue-600 px-2 py-1 rounded text-xs font-medium">
+                完结
+              </div>
+            </div>
+            <h4 class="font-medium mb-1 truncate">凡人修仙传</h4>
+            <p class="text-sm text-slate-400 mb-1 truncate">忘语</p>
+            <div class="flex items-center justify-between text-xs text-slate-500">
+              <span>仙侠</span>
+              <span>7200万</span>
+            </div>
+          </a>
+        </div>
+
+        <div class="card-hover">
+          <a href="/book-detail">
+            <div class="relative mb-3 rounded-lg overflow-hidden">
+              <img id="shxuImage"
+                   height="400"
+                   width="800"
+                   alt="圣墟"
+                   class="book-cover w-full"
+                   src="/templates/images/default.webp">
+              <div class="absolute top-2 right-2 bg-blue-600 px-2 py-1 rounded text-xs font-medium">
+                完结
+              </div>
+            </div>
+            <h4 class="font-medium mb-1 truncate">圣墟</h4>
+            <p class="text-sm text-slate-400 mb-1 truncate">辰东</p>
+            <div class="flex items-center justify-between text-xs text-slate-500">
+              <span>玄幻</span>
+              <span>6800万</span>
+            </div>
+          </a>
+        </div>
+
+        <div class="card-hover">
+          <a href="/book-detail">
+            <div class="relative mb-3 rounded-lg overflow-hidden">
+              <img id="xuezhImage"
+                   height="400"
+                   width="800"
+                   alt="雪中悍刀行"
+                   class="book-cover w-full"
+                   src="/templates/images/default.webp">
+              <div class="absolute top-2 right-2 bg-blue-600 px-2 py-1 rounded text-xs font-medium">
+                完结
+              </div>
+            </div>
+            <h4 class="font-medium mb-1 truncate">雪中悍刀行</h4>
+            <p class="text-sm text-slate-400 mb-1 truncate">烽火戏诸侯</p>
+            <div class="flex items-center justify-between text-xs text-slate-500">
+              <span>武侠</span>
+              <span>6500万</span>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 排行榜 -->
+    <div class="grid lg:grid-cols-3 gap-6 mb-12">
+      <div class="bg-slate-800 rounded-xl p-6">
+        <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+          <i data-lucide="trophy" class="w-5 h-5 text-yellow-500"></i>
+          热销榜
+        </h3>
+        <div class="space-y-3">
+          <a href="/book-detail" class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-700 transition-colors">
+            <div class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded font-bold text-sm bg-gradient-to-br from-yellow-500 to-orange-500">
+              1
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="font-medium truncate">诡秘之主</div>
+              <div class="text-xs text-slate-400 truncate">爱潜水的乌贼</div>
+            </div>
+            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-500"></i>
+          </a>
+          <a href="/book-detail" class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-700 transition-colors">
+            <div class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded font-bold text-sm bg-gradient-to-br from-yellow-500 to-orange-500">
+              2
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="font-medium truncate">大奉打更人</div>
+              <div class="text-xs text-slate-400 truncate">卖报小郎君</div>
+            </div>
+            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-500"></i>
+          </a>
+          <a href="/book-detail" class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-700 transition-colors">
+            <div class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded font-bold text-sm bg-gradient-to-br from-yellow-500 to-orange-500">
+              3
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="font-medium truncate">牧神记</div>
+              <div class="text-xs text-slate-400 truncate">宅猪</div>
+            </div>
+            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-500"></i>
+          </a>
+          <!-- 更多排行项 -->
+          <a href="/book-detail" class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-700 transition-colors">
+            <div class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded font-bold text-sm bg-slate-700">
+              4
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="font-medium truncate">凡人修仙传</div>
+              <div class="text-xs text-slate-400 truncate">忘语</div>
+            </div>
+            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-500"></i>
+          </a>
+          <a href="/book-detail" class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-700 transition-colors">
+            <div class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded font-bold text-sm bg-slate-700">
+              5
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="font-medium truncate">圣墟</div>
+              <div class="text-xs text-slate-400 truncate">辰东</div>
+            </div>
+            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-500"></i>
+          </a>
+        </div>
+      </div>
+
+      <div class="bg-slate-800 rounded-xl p-6">
+        <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+          <i data-lucide="trophy" class="w-5 h-5 text-yellow-500"></i>
+          新书榜
+        </h3>
+        <div class="space-y-3">
+          <!-- 新书榜内容 -->
+          <a href="/book-detail" class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-700 transition-colors">
+            <div class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded font-bold text-sm bg-gradient-to-br from-yellow-500 to-orange-500">
+              1
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="font-medium truncate">诡秘之主</div>
+              <div class="text-xs text-slate-400 truncate">爱潜水的乌贼</div>
+            </div>
+            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-500"></i>
+          </a>
+          <a href="/book-detail" class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-700 transition-colors">
+            <div class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded font-bold text-sm bg-gradient-to-br from-yellow-500 to-orange-500">
+              2
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="font-medium truncate">大奉打更人</div>
+              <div class="text-xs text-slate-400 truncate">卖报小郎君</div>
+            </div>
+            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-500"></i>
+          </a>
+          <a href="/book-detail" class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-700 transition-colors">
+            <div class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded font-bold text-sm bg-gradient-to-br from-yellow-500 to-orange-500">
+              3
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="font-medium truncate">牧神记</div>
+              <div class="text-xs text-slate-400 truncate">宅猪</div>
+            </div>
+            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-500"></i>
+          </a>
+          <a href="/book-detail" class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-700 transition-colors">
+            <div class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded font-bold text-sm bg-slate-700">
+              4
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="font-medium truncate">凡人修仙传</div>
+              <div class="text-xs text-slate-400 truncate">忘语</div>
+            </div>
+            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-500"></i>
+          </a>
+          <a href="/book-detail#" class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-700 transition-colors">
+            <div class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded font-bold text-sm bg-slate-700">
+              5
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="font-medium truncate">圣墟</div>
+              <div class="text-xs text-slate-400 truncate">辰东</div>
+            </div>
+            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-500"></i>
+          </a>
+        </div>
+      </div>
+
+      <div class="bg-slate-800 rounded-xl p-6">
+        <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+          <i data-lucide="trophy" class="w-5 h-5 text-yellow-500"></i>
+          完本榜
+        </h3>
+        <div class="space-y-3">
+          <!-- 完本榜内容 -->
+          <a href="/book-detail" class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-700 transition-colors">
+            <div class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded font-bold text-sm bg-gradient-to-br from-yellow-500 to-orange-500">
+              1
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="font-medium truncate">诡秘之主</div>
+              <div class="text-xs text-slate-400 truncate">爱潜水的乌贼</div>
+            </div>
+            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-500"></i>
+          </a>
+          <a href="/book-detail" class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-700 transition-colors">
+            <div class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded font-bold text-sm bg-gradient-to-br from-yellow-500 to-orange-500">
+              2
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="font-medium truncate">大奉打更人</div>
+              <div class="text-xs text-slate-400 truncate">卖报小郎君</div>
+            </div>
+            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-500"></i>
+          </a>
+          <a href="/book-detail" class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-700 transition-colors">
+            <div class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded font-bold text-sm bg-gradient-to-br from-yellow-500 to-orange-500">
+              3
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="font-medium truncate">牧神记</div>
+              <div class="text-xs text-slate-400 truncate">宅猪</div>
+            </div>
+            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-500"></i>
+          </a>
+          <a href="/book-detail" class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-700 transition-colors">
+            <div class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded font-bold text-sm bg-slate-700">
+              4
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="font-medium truncate">凡人修仙传</div>
+              <div class="text-xs text-slate-400 truncate">忘语</div>
+            </div>
+            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-500"></i>
+          </a>
+          <a href="/book-detail" class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-700 transition-colors">
+            <div class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded font-bold text-sm bg-slate-700">
+              5
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="font-medium truncate">圣墟</div>
+              <div class="text-xs text-slate-400 truncate">辰东</div>
+            </div>
+            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-500"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- 页脚 -->
+  <footer class="bg-slate-900 border-t border-slate-800 mt-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div class="grid md:grid-cols-4 gap-8 mb-8">
+        <div>
+          <h4 class="font-bold mb-4">关于我们</h4>
+          <ul class="space-y-2 text-sm text-slate-400">
+            <li><a href="#" class="hover:text-white">公司介绍</a></li>
+            <li><a href="#" class="hover:text-white">联系我们</a></li>
+            <li><a href="#" class="hover:text-white">招聘信息</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-bold mb-4">作者服务</h4>
+          <ul class="space-y-2 text-sm text-slate-400">
+            <li><a href="#" class="hover:text-white">作者福利</a></li>
+            <li><a href="#" class="hover:text-white">作者专区</a></li>
+            <li><a href="#" class="hover:text-white">写作指南</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-bold mb-4">帮助中心</h4>
+          <ul class="space-y-2 text-sm text-slate-400">
+            <li><a href="#" class="hover:text-white">新手指南</a></li>
+            <li><a href="#" class="hover:text-white">常见问题</a></li>
+            <li><a href="#" class="hover:text-white">意见反馈</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-bold mb-4">关注我们</h4>
+          <div class="flex gap-4">
+            <a href="#" class="w-10 h-10 bg-slate-800 hover:bg-slate-700 rounded-lg flex items-center justify-center transition-colors">
+              <i data-lucide="twitter" class="w-5 h-5"></i>
+            </a>
+            <a href="#" class="w-10 h-10 bg-slate-800 hover:bg-slate-700 rounded-lg flex items-center justify-center transition-colors">
+              <i data-lucide="facebook" class="w-5 h-5"></i>
+            </a>
+            <a href="#" class="w-10 h-10 bg-slate-800 hover:bg-slate-700 rounded-lg flex items-center justify-center transition-colors">
+              <i data-lucide="instagram" class="w-5 h-5"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="border-t border-slate-800 pt-8 text-center text-sm text-slate-500">
+        <p>© 2025 书海阁. 保留所有权利.</p>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<script>
+  // 初始化 Lucide 图标
+  document.addEventListener('DOMContentLoaded', function() {
+    lucide.createIcons();
+
+    // 轮播图功能实现
+    const bannerItems = document.querySelectorAll('.banner-item');
+    const bannerDots = document.querySelectorAll('.banner-dot');
+    const prevBtn = document.getElementById('prevBanner');
+    const nextBtn = document.getElementById('nextBanner');
+    let currentBanner = 0;
+    const totalBanners = bannerItems.length;
+
+    // 切换轮播图
+    function showBanner(index) {
+      // 隐藏所有轮播项
+      bannerItems.forEach(item => {
+        item.classList.remove('active');
+      });
+
+      // 重置所有指示器
+      bannerDots.forEach(dot => {
+        dot.classList.remove('w-8', 'bg-blue-500');
+        dot.classList.add('w-2', 'bg-white/50');
+      });
+
+      // 显示当前轮播项
+      bannerItems[index].classList.add('active');
+
+      // 激活当前指示器
+      bannerDots[index].classList.remove('w-2', 'bg-white/50');
+      bannerDots[index].classList.add('w-8', 'bg-blue-500');
+
+      currentBanner = index;
+    }
+
+    // 下一张轮播图
+    function nextBanner() {
+      const nextIndex = (currentBanner + 1) % totalBanners;
+      showBanner(nextIndex);
+    }
+
+    // 上一张轮播图
+    function prevBanner() {
+      const prevIndex = (currentBanner - 1 + totalBanners) % totalBanners;
+      showBanner(prevIndex);
+    }
+
+    // 点击指示器切换轮播图
+    bannerDots.forEach(dot => {
+      dot.addEventListener('click', function() {
+        const index = parseInt(this.getAttribute('data-index'));
+        showBanner(index);
+      });
+    });
+
+    // 绑定按钮事件
+    prevBtn.addEventListener('click', prevBanner);
+    nextBtn.addEventListener('click', nextBanner);
+
+    // 自动轮播
+    setInterval(nextBanner, 5000);
+  });
+</script>
+<!-- 放在页面底部，确保img标签已加载 -->
+<script>
+  function loadImage(elementId, bookName) {
+    const imgElement = document.getElementById(elementId);
+    if (!imgElement) {
+      console.error(`未找到ID为${elementId}的图片元素`);
+      return;
+    }
+
+    fetch(`/ebook?name=${encodeURIComponent(bookName)}`)
+            .then(response => {
+              if (!response.ok) throw new Error(`获取《${bookName}》图片失败`);
+              return response.text();
+            })
+            .then(imageUrl => {
+              imgElement.src = imageUrl; // 设置图片链接
+            })
+            .catch(error => {
+              console.error(error);
+              imgElement.src = '/images/error.jpg'; // 错误默认图
+            });
+  }
+
+  window.addEventListener('DOMContentLoaded', function() {
+    // 定义需要加载的图片信息：[元素ID, 书籍名称]
+    const imageList = [
+      ['doupoImage', '斗破苍穹'],
+      ['zhetianImage', '遮天'],
+      ['wanmeiImage', '完美世界'],
+      ['guimiImage', '诡秘之主'],
+      ['dafImage', '大奉打更人'],
+      ['mushImage', '牧神记'],
+      ['fanrenImage', '凡人修仙传'],
+      ['shxuImage', '圣墟'],
+      ['xuezhImage', '雪中悍刀行'],
+      ['zetianImage', '择天记'],
+      ['jianlaiImage', '剑来'],
+      ['yuanzunImage', '元尊']
+    ];
+
+    imageList.forEach(([elementId, bookName]) => {
+      loadImage(elementId, bookName);
+    });
+  });
+</script>
+</body>
+</html>

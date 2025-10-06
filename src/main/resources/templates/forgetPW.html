@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>忘记密码 - 书海阁</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+
+        * {
+            font-family: 'Noto Sans SC', sans-serif;
+        }
+
+        :root {
+            --color-primary: #1e40af;
+            --color-primary-light: #3b82f6;
+            --color-accent: #10b981;
+            --color-bg-dark: #0f172a;
+            --color-bg-darker: #020617;
+            --color-bg-card: #1e293b;
+            --color-text: #f1f5f9;
+            --color-text-muted: #94a3b8;
+            --color-success: #10b981;
+            --color-warning: #f59e0b;
+            --color-error: #ef4444;
+        }
+
+        body {
+            background: var(--color-bg-dark);
+            color: var(--color-text);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #3b82f6 0%, #10b981 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* 主题样式适配 */
+        body.theme-light {
+            background: #f8fafc;
+            color: #1e293b;
+        }
+
+        body.theme-light .bg-slate-900 {
+            background: #ffffff !important;
+            border-color: #e2e8f0 !important;
+        }
+
+        body.theme-light .bg-slate-800 {
+            background: #f1f5f9 !important;
+        }
+
+        body.theme-light .text-slate-300,
+        body.theme-light .text-slate-400 {
+            color: #64748b !important;
+        }
+
+        body.theme-light .text-white {
+            color: #1e293b !important;
+        }
+
+        /* 步骤指示器动画 */
+        .step-active {
+            transition: all 0.3s ease;
+        }
+
+        .step-line {
+            transition: width 0.4s ease 0.2s;
+        }
+
+        /* 表单切换动画 */
+        .form-step {
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .form-step.hidden {
+            opacity: 0;
+            transform: translateY(10px);
+            pointer-events: none;
+        }
+
+        /* 验证码倒计时动画 */
+        .countdown-btn {
+            transition: all 0.3s ease;
+        }
+
+        .countdown-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        /* 输入框焦点样式 */
+        .form-input:focus {
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+        }
+    </style>
+</head>
+<body>
+<div class="min-h-screen flex flex-col">
+    <!-- 顶部导航 -->
+    <nav class="bg-slate-900 border-b border-slate-800 sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-14">
+                <div class="flex items-center gap-4">
+                    <a href="/log" class="text-slate-300 hover:text-white">
+                        <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                    </a>
+                    <div class="hidden sm:block">
+                        <div class="font-medium text-sm truncate max-w-xs">书海阁</div>
+                        <div class="text-xs text-slate-400">找回密码</div>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <a href="/log" class="text-sm text-slate-300 hover:text-white transition-colors">
+                        返回登录
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主要内容 -->
+    <main class="flex-1 flex items-center justify-center p-4 sm:p-6">
+        <div class="w-full max-w-md">
+            <!-- 标题区域 -->
+            <div class="text-center mb-8">
+                <h1 class="text-2xl font-bold mb-2 gradient-text">找回密码</h1>
+                <p class="text-slate-400">通过邮箱验证身份，设置新密码</p>
+            </div>
+
+            <!-- 步骤指示器 -->
+            <div class="flex items-center justify-between mb-10">
+                <div class="flex flex-col items-center">
+                    <div id="step1Indicator" class="step-active w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-medium">1</div>
+                    <p class="mt-2 text-sm text-slate-300">验证邮箱</p>
+                </div>
+
+                <div class="flex-1 mx-2">
+                    <div id="line1" class="step-line w-0 h-1 bg-slate-700 mx-auto"></div>
+                </div>
+
+                <div class="flex flex-col items-center">
+                    <div id="step2Indicator" class="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center text-slate-400 font-medium">2</div>
+                    <p class="mt-2 text-sm text-slate-400">设置新密码</p>
+                </div>
+
+                <div class="flex-1 mx-2">
+                    <div id="line2" class="step-line w-0 h-1 bg-slate-700 mx-auto"></div>
+                </div>
+
+                <div class="flex flex-col items-center">
+                    <div id="step3Indicator" class="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center text-slate-400 font-medium">3</div>
+                    <p class="mt-2 text-sm text-slate-400">完成</p>
+                </div>
+            </div>
+
+            <!-- 卡片容器 -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden">
+                <!-- 步骤1：验证邮箱表单 -->
+                <div id="step1Form" class="form-step p-6">
+                    <div class="space-y-6">
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-slate-300 mb-1">注册邮箱</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i data-lucide="mail" class="w-5 h-5 text-slate-400"></i>
+                                </div>
+                                <input type="email" id="email"
+                                       class="form-input w-full pl-10 pr-3 py-3 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:border-blue-500 transition-colors text-white"
+                                       placeholder="请输入您的注册邮箱" required>
+                            </div>
+                            <p id="emailError" class="mt-1 text-xs text-red-500 hidden">请输入有效的邮箱地址</p>
+                        </div>
+
+                        <div>
+                            <div class="flex items-center justify-between mb-1">
+                                <label for="verifyCode" class="block text-sm font-medium text-slate-300">验证码</label>
+                                <button type="button" id="sendCodeBtn" class="countdown-btn text-sm text-blue-500 hover:text-blue-400 transition-colors">
+                                    获取验证码
+                                </button>
+                            </div>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i data-lucide="shield" class="w-5 h-5 text-slate-400"></i>
+                                </div>
+                                <input type="text" id="verifyCode"
+                                       class="form-input w-full pl-10 pr-3 py-3 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:border-blue-500 transition-colors text-white"
+                                       placeholder="请输入6位验证码" maxlength="6" required>
+                            </div>
+                            <p id="codeError" class="mt-1 text-xs text-red-500 hidden">验证码不正确或已过期</p>
+                        </div>
+
+                        <button type="button" id="toStep2Btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors">
+                            下一步
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 步骤2：设置新密码表单 -->
+                <div id="step2Form" class="form-step p-6 hidden">
+                    <div class="space-y-6">
+                        <div>
+                            <label for="newPassword" class="block text-sm font-medium text-slate-300 mb-1">新密码</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i data-lucide="lock" class="w-5 h-5 text-slate-400"></i>
+                                </div>
+                                <input type="password" id="newPassword"
+                                       class="form-input w-full pl-10 pr-10 py-3 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:border-blue-500 transition-colors text-white"
+                                       placeholder="请设置新密码" required>
+                                <button type="button" class="toggle-password absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-white" data-target="newPassword">
+                                    <i data-lucide="eye" class="w-5 h-5"></i>
+                                </button>
+                            </div>
+                            <div class="mt-2 grid grid-cols-3 gap-1">
+                                <div id="pwdLength" class="text-xs text-slate-400">8-20位字符</div>
+                                <div id="pwdLetter" class="text-xs text-slate-400">包含字母</div>
+                                <div id="pwdNumber" class="text-xs text-slate-400">包含数字</div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="confirmPassword" class="block text-sm font-medium text-slate-300 mb-1">确认新密码</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i data-lucide="lock" class="w-5 h-5 text-slate-400"></i>
+                                </div>
+                                <input type="password" id="confirmPassword"
+                                       class="form-input w-full pl-10 pr-10 py-3 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:border-blue-500 transition-colors text-white"
+                                       placeholder="请再次输入新密码" required>
+                                <button type="button" class="toggle-password absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-white" data-target="confirmPassword">
+                                    <i data-lucide="eye" class="w-5 h-5"></i>
+                                </button>
+                            </div>
+                            <p id="pwdMatchError" class="mt-1 text-xs text-red-500 hidden">两次输入的密码不一致</p>
+                        </div>
+
+                        <div class="flex gap-2">
+                            <button type="button" id="backToStep1Btn" class="flex-1 bg-slate-800 hover:bg-slate-700 text-white font-medium py-3 px-4 rounded-lg transition-colors">
+                                上一步
+                            </button>
+                            <button type="button" id="toStep3Btn" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors">
+                                确认修改
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 步骤3：完成页面 -->
+                <div id="step3Form" class="form-step p-6 hidden text-center">
+                    <div class="flex flex-col items-center justify-center py-6">
+                        <div class="w-16 h-16 rounded-full bg-green-600/20 flex items-center justify-center mb-4">
+                            <i data-lucide="check" class="w-8 h-8 text-green-500"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2">密码修改成功</h3>
+                        <p class="text-slate-400 mb-8">您的密码已成功更新，请使用新密码登录</p>
+
+                        <a href="/log" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors inline-block">
+                            前往登录
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 帮助链接 -->
+            <div class="mt-6 text-center">
+                <p class="text-sm text-slate-400">
+                    遇到问题?
+                    <a href="#" class="text-blue-500 hover:text-blue-400 transition-colors">
+                        联系客服
+                    </a>
+                </p>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 初始化图标
+        lucide.createIcons();
+
+        // 获取DOM元素
+        // 步骤指示器
+        const step1Indicator = document.getElementById('step1Indicator');
+        const step2Indicator = document.getElementById('step2Indicator');
+        const step3Indicator = document.getElementById('step3Indicator');
+        const line1 = document.getElementById('line1');
+        const line2 = document.getElementById('line2');
+
+        // 表单容器
+        const step1Form = document.getElementById('step1Form');
+        const step2Form = document.getElementById('step2Form');
+        const step3Form = document.getElementById('step3Form');
+
+        // 步骤1元素
+        const emailInput = document.getElementById('email');
+        const sendCodeBtn = document.getElementById('sendCodeBtn');
+        const verifyCodeInput = document.getElementById('verifyCode');
+        const emailError = document.getElementById('emailError');
+        const codeError = document.getElementById('codeError');
+        const toStep2Btn = document.getElementById('toStep2Btn');
+
+        // 步骤2元素
+        const newPasswordInput = document.getElementById('newPassword');
+        const confirmPasswordInput = document.getElementById('confirmPassword');
+        const backToStep1Btn = document.getElementById('backToStep1Btn');
+        const toStep3Btn = document.getElementById('toStep3Btn');
+        const pwdLength = document.getElementById('pwdLength');
+        const pwdLetter = document.getElementById('pwdLetter');
+        const pwdNumber = document.getElementById('pwdNumber');
+        const pwdMatchError = document.getElementById('pwdMatchError');
+
+        // 密码可见性切换按钮
+        const togglePasswordBtns = document.querySelectorAll('.toggle-password');
+
+        // 状态变量
+        let countdownTimer = null;
+        let hasSentCode = false;
+        let storedVerifyCode = '123'; // 实际项目中应从后端获取
+        const emailReg = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+        // 步骤切换函数
+        function goToStep1() {
+            // 更新指示器
+            step1Indicator.className = 'step-active w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-medium';
+            step2Indicator.className = 'w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center text-slate-400 font-medium';
+            step3Indicator.className = 'w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center text-slate-400 font-medium';
+            line1.style.width = '0%';
+            line2.style.width = '0%';
+
+            // 显示对应表单
+            step1Form.classList.remove('hidden');
+            step2Form.classList.add('hidden');
+            step3Form.classList.add('hidden');
+        }
+
+        function goToStep2() {
+            // 更新指示器
+            step1Indicator.className = 'w-10 h-10 rounded-full bg-blue-600/30 flex items-center justify-center text-blue-500 font-medium';
+            step2Indicator.className = 'step-active w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-medium';
+            step3Indicator.className = 'w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center text-slate-400 font-medium';
+            line1.style.width = '100%';
+            line2.style.width = '0%';
+
+            // 显示对应表单
+            step1Form.classList.add('hidden');
+            step2Form.classList.remove('hidden');
+            step3Form.classList.add('hidden');
+        }
+
+        function goToStep3() {
+            // 更新指示器
+            step1Indicator.className = 'w-10 h-10 rounded-full bg-blue-600/30 flex items-center justify-center text-blue-500 font-medium';
+            step2Indicator.className = 'w-10 h-10 rounded-full bg-blue-600/30 flex items-center justify-center text-blue-500 font-medium';
+            step3Indicator.className = 'step-active w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-medium';
+            line1.style.width = '100%';
+            line2.style.width = '100%';
+
+            // 显示对应表单
+            step1Form.classList.add('hidden');
+            step2Form.classList.add('hidden');
+            step3Form.classList.remove('hidden');
+        }
+
+        // 发送验证码倒计时
+        function startCountdown() {
+            let seconds = 60;
+            sendCodeBtn.disabled = true;
+            sendCodeBtn.textContent = `重新发送(${seconds}s)`;
+            sendCodeBtn.classList.add('opacity-70', 'cursor-not-allowed');
+
+            countdownTimer = setInterval(() => {
+                seconds--;
+                sendCodeBtn.textContent = `重新发送(${seconds}s)`;
+
+                if (seconds <= 0) {
+                    clearInterval(countdownTimer);
+                    sendCodeBtn.disabled = false;
+                    sendCodeBtn.textContent = '获取验证码';
+                    sendCodeBtn.classList.remove('opacity-70', 'cursor-not-allowed');
+                }
+            }, 1000);
+        }
+
+        // 生成随机验证码
+        function generateVerifyCode() {
+            return Math.random().toString(36).substring(2, 8).toUpperCase();
+        }
+
+        // 验证邮箱格式
+        function validateEmail() {
+            const email = emailInput.value.trim();
+            if (!emailReg.test(email)) {
+                emailError.classList.remove('hidden');
+                return false;
+            }
+            emailError.classList.add('hidden');
+            return true;
+        }
+
+        // 验证验证码
+        function validateCode() {
+            const code = verifyCodeInput.value.trim();
+            if (!code || code !== storedVerifyCode) {
+                codeError.classList.remove('hidden');
+                return false;
+            }
+            codeError.classList.add('hidden');
+            return true;
+        }
+
+        // 验证密码强度
+        function validatePasswordStrength() {
+            const password = newPasswordInput.value;
+            let isValid = true;
+
+            // 长度验证
+            if (password.length >= 8 && password.length <= 20) {
+                pwdLength.className = 'text-xs text-green-500';
+            } else {
+                pwdLength.className = 'text-xs text-red-500';
+                isValid = false;
+            }
+
+            // 字母验证
+            if (/[a-zA-Z]/.test(password)) {
+                pwdLetter.className = 'text-xs text-green-500';
+            } else {
+                pwdLetter.className = 'text-xs text-red-500';
+                isValid = false;
+            }
+
+            // 数字验证
+            if (/[0-9]/.test(password)) {
+                pwdNumber.className = 'text-xs text-green-500';
+            } else {
+                pwdNumber.className = 'text-xs text-red-500';
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        // 验证密码一致性
+        function validatePasswordMatch() {
+            const newPwd = newPasswordInput.value;
+            const confirmPwd = confirmPasswordInput.value;
+
+            if (newPwd !== confirmPwd) {
+                pwdMatchError.classList.remove('hidden');
+                return false;
+            }
+            pwdMatchError.classList.add('hidden');
+            return true;
+        }
+
+        // 切换密码可见性
+        togglePasswordBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const targetId = this.getAttribute('data-target');
+                const passwordInput = document.getElementById(targetId);
+                const icon = this.querySelector('i');
+
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    icon.setAttribute('data-lucide', 'eye-off');
+                } else {
+                    passwordInput.type = 'password';
+                    icon.setAttribute('data-lucide', 'eye');
+                }
+                // 重新渲染图标
+                lucide.createIcons(icon);
+            });
+        });
+
+        // 绑定事件
+        // 步骤1事件
+        emailInput.addEventListener('input', validateEmail);
+        verifyCodeInput.addEventListener('input', validateCode);
+
+        sendCodeBtn.addEventListener('click', function() {
+            if (!validateEmail()) return;
+
+            // 生成验证码（实际项目中应调用后端接口发送邮件）
+            storedVerifyCode = generateVerifyCode();
+            hasSentCode = true;
+
+            // 模拟发送成功
+            alert(`验证码已发送至您的邮箱，验证码：${storedVerifyCode}（仅演示用）`);
+            startCountdown();
+        });
+
+        toStep2Btn.addEventListener('click', function() {
+            if (!validateEmail() || !hasSentCode || !validateCode()) return;
+            goToStep2();
+        });
+
+        // 步骤2事件
+        newPasswordInput.addEventListener('input', function() {
+            validatePasswordStrength();
+            validatePasswordMatch();
+        });
+
+        confirmPasswordInput.addEventListener('input', validatePasswordMatch);
+
+        backToStep1Btn.addEventListener('click', goToStep1);
+
+        toStep3Btn.addEventListener('click', function() {
+            const isPwdValid = validatePasswordStrength();
+            const isPwdMatch = validatePasswordMatch();
+
+            if (!isPwdValid || !isPwdMatch) return;
+
+            // 模拟密码修改请求
+            setTimeout(() => {
+                goToStep3();
+            }, 800);
+        });
+
+        // 恢复主题设置
+        const savedTheme = localStorage.getItem('reading-theme');
+        if (savedTheme) {
+            document.body.classList.add(`theme-${savedTheme}`);
+        }
+
+        // 页面卸载时清除定时器
+        window.addEventListener('beforeunload', function() {
+            if (countdownTimer) {
+                clearInterval(countdownTimer);
+            }
+        });
+    });
+</script>
+</body>
+</html>

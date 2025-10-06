@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>第1章 序幕 - 诡秘之主 - 书海阁</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Noto+Serif+SC:wght@400;500;600&display=swap');
+
+    * {
+      font-family: 'Noto Sans SC', sans-serif;
+    }
+
+    :root {
+      --color-primary: #1e40af;
+      --color-primary-light: #3b82f6;
+      --color-accent: #10b981;
+      --color-bg-dark: #0f172a;
+      --color-bg-darker: #020617;
+      --color-bg-card: #1e293b;
+      --color-text: #f1f5f9;
+      --color-text-muted: #94a3b8;
+    }
+
+    body {
+      background: var(--color-bg-dark);
+      color: var(--color-text);
+    }
+
+    .gradient-text {
+      background: linear-gradient(135deg, #3b82f6 0%, #10b981 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* 阅读区域样式 */
+    .reading-content {
+      font-family: 'Noto Serif SC', serif;
+      line-height: 2;
+      text-align: justify;
+    }
+
+    .reading-content p {
+      margin-bottom: 1.5em;
+      text-indent: 2em;
+    }
+
+    /* 主题样式 */
+    body.theme-light {
+      background: #f8fafc;
+      color: #1e293b;
+    }
+
+    body.theme-light .bg-slate-900 {
+      background: #ffffff !important;
+      border-color: #e2e8f0 !important;
+    }
+
+    body.theme-light .bg-slate-800 {
+      background: #f1f5f9 !important;
+    }
+
+    body.theme-light .text-slate-300,
+    body.theme-light .text-slate-400 {
+      color: #64748b !important;
+    }
+
+    body.theme-light .text-white {
+      color: #1e293b !important;
+    }
+
+    body.theme-sepia {
+      background: #f4ecd8;
+      color: #5c4a2f;
+    }
+
+    body.theme-sepia .bg-slate-900 {
+      background: #faf6ed !important;
+      border-color: #e8dcc3 !important;
+    }
+
+    body.theme-sepia .bg-slate-800 {
+      background: #f4ecd8 !important;
+    }
+
+    body.theme-sepia .text-slate-300,
+    body.theme-sepia .text-slate-400,
+    body.theme-sepia .text-white {
+      color: #5c4a2f !important;
+    }
+
+    body.theme-green {
+      background: #cce8cc;
+      color: #1a3d1a;
+    }
+
+    body.theme-green .bg-slate-900 {
+      background: #e6f4e6 !important;
+      border-color: #b8ddb8 !important;
+    }
+
+    body.theme-green .bg-slate-800 {
+      background: #cce8cc !important;
+    }
+
+    body.theme-green .text-slate-300,
+    body.theme-green .text-slate-400,
+    body.theme-green .text-white {
+      color: #1a3d1a !important;
+    }
+
+    /* 设置面板 */
+    .settings-panel {
+      position: fixed;
+      bottom: 80px;
+      right: 20px;
+      background: var(--color-bg-card);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+      z-index: 100;
+      min-width: 280px;
+    }
+
+    /* 进度条 */
+    .progress-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #3b82f6 0%, #10b981 100%);
+      transition: width 0.1s ease;
+      z-index: 1000;
+    }
+
+    /* 隐藏元素 */
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body class="theme-dark">
+<div id="app">
+  <div class="min-h-screen pb-20">
+    <!-- 进度条 -->
+    <div id="progressBar" class="progress-bar"></div>
+
+    <!-- 顶部导航 -->
+    <nav class="bg-slate-900 border-b border-slate-800 sticky top-0 z-50">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-14">
+          <div class="flex items-center gap-4">
+            <a href="/book-detail" class="text-slate-300 hover:text-white">
+              <i data-lucide="arrow-left" class="w-5 h-5"></i>
+            </a>
+            <div class="hidden sm:block">
+              <div class="font-medium text-sm truncate max-w-xs">诡秘之主</div>
+              <div class="text-xs text-slate-400">第1章 序幕</div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button id="catalogButton"
+                    class="p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors">
+              <i data-lucide="list" class="w-5 h-5"></i>
+            </button>
+            <button id="settingsButton"
+                    class="p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors">
+              <i data-lucide="settings" class="w-5 h-5"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- 主要内容 -->
+    <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- 章节标题 -->
+      <div class="text-center mb-12">
+        <h1 class="text-3xl font-bold mb-2">第1章 序幕</h1>
+        <div class="flex items-center justify-center gap-4 text-sm text-slate-400">
+          <span>字数：3245</span>
+          <span>更新时间：2024-01-01</span>
+        </div>
+      </div>
+
+      <!-- 章节内容 -->
+      <div id="readingContent" class="reading-content mb-12">
+        <p>在这个充满蒸汽与机械的时代，克莱恩·莫雷蒂从沉睡中醒来。</p>
+        <p>他发现自己身处一个陌生的世界，这里有着与地球截然不同的历史和文明。蒸汽机车在铁轨上呼啸而过，巨大的飞空艇在天空中缓缓飘荡，差分机的齿轮在精密地运转着。</p>
+        <p>但这个世界并不像表面看起来那样简单。在光明的背后，隐藏着无数的秘密和危险。神秘的魔药体系、诡异的封印物、不可名状的邪神……这一切都在等待着他去探索。</p>
+        <p>克莱恩很快意识到，自己继承了原主的记忆，但同时也继承了他的麻烦。作为一名历史系的大学生，他本应该过着平静的生活，但命运却将他推向了一条充满未知和危险的道路。</p>
+        <p>在这个世界里，知识就是力量，但同时也是诅咒。了解得越多，就越容易陷入疯狂。而克莱恩必须在保持理智和追求真相之间找到平衡。</p>
+        <p>夜幕降临，红月高悬。在这个诡秘的世界里，一个关于"愚者"的传说即将开始……</p>
+        <p>克莱恩站在窗前，望着天空中那轮血红色的月亮，心中涌起一股莫名的悸动。他知道，自己的人生从此将不再平凡。</p>
+        <p>在接下来的日子里，他将会遇到各种各样的人和事。有的会成为他的伙伴，有的会成为他的敌人。但无论如何，他都必须坚持下去，因为这是他唯一的选择。</p>
+        <p>这个世界的规则很简单：要么变强，要么死亡。而克莱恩选择了前者。</p>
+        <p>他开始研究这个世界的魔药体系，试图找到变强的方法。通过原主留下的笔记，他了解到魔药是由各种神秘材料调配而成的，服用后可以获得超凡的力量。</p>
+        <p>但魔药并非没有代价。每一种魔药都有其副作用，如果无法控制，就会陷入失控的状态，最终变成怪物。</p>
+        <p>克莱恩深知这一点，所以他格外小心。他不敢轻易尝试任何魔药，而是先通过学习和观察来了解这个世界的运作规律。</p>
+        <p>就在这时，一个神秘的声音在他脑海中响起："欢迎来到灰雾之上……"</p>
+        <p>克莱恩猛地转身，却发现房间里空无一人。但那个声音却依然在他耳边回荡，仿佛来自另一个维度。</p>
+        <p>他意识到，自己可能触发了某种神秘的仪式。而这个仪式，将会改变他的一生。</p>
+      </div>
+
+      <!-- 章节导航 -->
+      <div class="flex items-center justify-between py-8 border-t border-slate-800">
+        <button id="prevChapter" disabled
+                class="flex items-center gap-2 bg-slate-800 px-6 py-3 rounded-lg opacity-50 cursor-not-allowed">
+          <i data-lucide="chevron-left" class="w-5 h-5"></i>
+          <span>上一章</span>
+        </button>
+
+        <button id="catalogButton2"
+                class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg transition-colors">
+          <i data-lucide="list" class="w-5 h-5"></i>
+          <span>目录</span>
+        </button>
+
+        <a id="nextChapter" href="/read?id=2"
+           class="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 px-6 py-3 rounded-lg transition-colors">
+          <span>下一章</span>
+          <i data-lucide="chevron-right" class="w-5 h-5"></i>
+        </a>
+      </div>
+    </main>
+
+    <!-- 底部工具栏 -->
+    <div class="fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-800 z-40">
+      <div class="max-w-4xl mx-auto px-4 py-3">
+        <div class="flex items-center justify-between">
+          <div class="w-20"></div>
+
+          <div class="flex items-center gap-4">
+            <button class="p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors">
+              <i data-lucide="bookmark" class="w-5 h-5"></i>
+            </button>
+            <button id="catalogButton3"
+                    class="p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors">
+              <i data-lucide="list" class="w-5 h-5"></i>
+            </button>
+            <button id="settingsButton2"
+                    class="p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors">
+              <i data-lucide="settings" class="w-5 h-5"></i>
+            </button>
+          </div>
+
+          <button id="nextChapter2" class="flex items-center gap-1 text-slate-300 hover:text-white text-sm">
+            <span class="hidden sm:inline">下一章</span>
+            <i data-lucide="chevron-right" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 设置面板 -->
+    <div id="settingsPanel" class="settings-panel hidden">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-bold">阅读设置</h3>
+        <button id="closeSettings" class="text-slate-400 hover:text-white">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- 字体大小 -->
+      <div class="mb-6">
+        <div class="text-sm text-slate-400 mb-3">字体大小</div>
+        <div class="flex items-center gap-2">
+          <button data-size="14" class="font-size-btn px-3 py-2 rounded-lg text-sm transition-colors bg-slate-700 text-slate-300 hover:bg-slate-600">
+            14
+          </button>
+          <button data-size="16" class="font-size-btn px-3 py-2 rounded-lg text-sm transition-colors bg-slate-700 text-slate-300 hover:bg-slate-600">
+            16
+          </button>
+          <button data-size="18" class="font-size-btn px-3 py-2 rounded-lg text-sm transition-colors bg-blue-600 text-white">
+            18
+          </button>
+          <button data-size="20" class="font-size-btn px-3 py-2 rounded-lg text-sm transition-colors bg-slate-700 text-slate-300 hover:bg-slate-600">
+            20
+          </button>
+          <button data-size="22" class="font-size-btn px-3 py-2 rounded-lg text-sm transition-colors bg-slate-700 text-slate-300 hover:bg-slate-600">
+            22
+          </button>
+          <button data-size="24" class="font-size-btn px-3 py-2 rounded-lg text-sm transition-colors bg-slate-700 text-slate-300 hover:bg-slate-600">
+            24
+          </button>
+        </div>
+      </div>
+
+      <!-- 主题 -->
+      <div>
+        <div class="text-sm text-slate-400 mb-3">阅读主题</div>
+        <div class="grid grid-cols-2 gap-2">
+          <button data-theme="dark" class="theme-btn flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors bg-blue-600 text-white">
+            <div class="w-4 h-4 rounded" style="background: #0f172a"></div>
+            <span>夜间</span>
+          </button>
+          <button data-theme="light" class="theme-btn flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors bg-slate-700 text-slate-300 hover:bg-slate-600">
+            <div class="w-4 h-4 rounded" style="background: #f8fafc"></div>
+            <span>日间</span>
+          </button>
+          <button data-theme="sepia" class="theme-btn flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors bg-slate-700 text-slate-300 hover:bg-slate-600">
+            <div class="w-4 h-4 rounded" style="background: #f4ecd8"></div>
+            <span>护眼</span>
+          </button>
+          <button data-theme="green" class="theme-btn flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors bg-slate-700 text-slate-300 hover:bg-slate-600">
+            <div class="w-4 h-4 rounded" style="background: #cce8cc"></div>
+            <span>绿色</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 目录面板 -->
+    <div id="catalogPanel" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+      <div class="bg-slate-800 rounded-2xl w-full max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
+        <div class="flex items-center justify-between p-6 border-b border-slate-700">
+          <h3 class="text-xl font-bold">章节目录</h3>
+          <button id="closeCatalog" class="text-slate-400 hover:text-white">
+            <i data-lucide="x" class="w-6 h-6"></i>
+          </button>
+        </div>
+
+        <div class="overflow-y-auto p-6">
+          <div class="grid sm:grid-cols-2 gap-2" id="catalogList">
+            <!-- 目录项将通过JavaScript动态生成 -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // 初始化变量
+  let showSettings = false;
+  let showCatalog = false;
+  let fontSize = 18;
+  let theme = 'dark';
+
+  // DOM 元素
+  const progressBar = document.getElementById('progressBar');
+  const readingContent = document.getElementById('readingContent');
+  const settingsPanel = document.getElementById('settingsPanel');
+  const catalogPanel = document.getElementById('catalogPanel');
+  const catalogList = document.getElementById('catalogList');
+
+  // 章节信息
+  const chapterInfo = {
+    bookTitle: '诡秘之主',
+    bookId: 1,
+    chapterNumber: 1,
+    chapterTitle: '序幕',
+    prevChapter: null,
+    nextChapter: 2,
+    wordCount: 3245,
+    updateTime: '2024-01-01'
+  };
+
+  // 目录数据
+  const catalogChapters = [];
+  for (let i = 1; i <= 50; i++) {
+    catalogChapters.push({
+      number: i,
+      title: `第${i}章 ${['序幕', '红月', '占卜家', '塔罗会', '愚者'][i % 5]}`
+    });
+  }
+
+  // 初始化函数
+  function init() {
+    // 恢复设置
+    const savedTheme = localStorage.getItem('reading-theme') || 'dark';
+    const savedFontSize = localStorage.getItem('reading-font-size') || 18;
+    changeTheme(savedTheme);
+    changeFontSize(parseInt(savedFontSize));
+
+    // 初始化目录
+    initCatalog();
+
+    // 添加事件监听器
+    addEventListeners();
+
+    // 初始化图标
+    lucide.createIcons();
+
+    // 监听滚动
+    window.addEventListener('scroll', updateScrollProgress);
+    updateScrollProgress();
+  }
+
+  // 初始化目录
+  function initCatalog() {
+    catalogList.innerHTML = '';
+    catalogChapters.forEach(chapter => {
+      const button = document.createElement('button');
+      button.className = `text-left p-3 rounded-lg hover:bg-slate-700 transition-colors ${
+              chapter.number === chapterInfo.chapterNumber ? 'bg-blue-600 text-white' : 'text-slate-300'
+      }`;
+      button.textContent = chapter.title;
+      button.addEventListener('click', () => goToChapter(chapter.number));
+      catalogList.appendChild(button);
+    });
+  }
+
+  // 添加事件监听器
+  function addEventListeners() {
+    // 设置按钮
+    document.getElementById('settingsButton').addEventListener('click', toggleSettings);
+    document.getElementById('settingsButton2').addEventListener('click', toggleSettings);
+    document.getElementById('closeSettings').addEventListener('click', toggleSettings);
+
+    // 目录按钮
+    document.getElementById('catalogButton').addEventListener('click', toggleCatalog);
+    document.getElementById('catalogButton2').addEventListener('click', toggleCatalog);
+    document.getElementById('catalogButton3').addEventListener('click', toggleCatalog);
+    document.getElementById('closeCatalog').addEventListener('click', toggleCatalog);
+
+    // 字体大小按钮
+    document.querySelectorAll('.font-size-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const size = parseInt(this.getAttribute('data-size'));
+        changeFontSize(size);
+      });
+    });
+
+    // 主题按钮
+    document.querySelectorAll('.theme-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const theme = this.getAttribute('data-theme');
+        changeTheme(theme);
+      });
+    });
+
+    // 点击目录面板外部关闭目录
+    catalogPanel.addEventListener('click', function(e) {
+      if (e.target === catalogPanel) {
+        toggleCatalog();
+      }
+    });
+  }
+
+  // 切换设置面板
+  function toggleSettings() {
+    showSettings = !showSettings;
+    if (showSettings) {
+      settingsPanel.classList.remove('hidden');
+    } else {
+      settingsPanel.classList.add('hidden');
+    }
+  }
+
+  // 切换目录面板
+  function toggleCatalog() {
+    showCatalog = !showCatalog;
+    if (showCatalog) {
+      catalogPanel.classList.remove('hidden');
+    } else {
+      catalogPanel.classList.add('hidden');
+    }
+  }
+
+  // 切换主题
+  function changeTheme(newTheme) {
+    theme = newTheme;
+    document.body.className = `theme-${newTheme}`;
+    localStorage.setItem('reading-theme', newTheme);
+
+    // 更新主题按钮样式
+    document.querySelectorAll('.theme-btn').forEach(btn => {
+      if (btn.getAttribute('data-theme') === newTheme) {
+        btn.className = btn.className.replace('bg-slate-700', 'bg-blue-600').replace('text-slate-300', 'text-white');
+      } else {
+        btn.className = btn.className.replace('bg-blue-600', 'bg-slate-700').replace('text-white', 'text-slate-300');
+      }
+    });
+  }
+
+  // 调整字体大小
+  function changeFontSize(size) {
+    fontSize = size;
+    readingContent.style.fontSize = `${size}px`;
+    localStorage.setItem('reading-font-size', size);
+
+    // 更新字体大小按钮样式
+    document.querySelectorAll('.font-size-btn').forEach(btn => {
+      if (parseInt(btn.getAttribute('data-size')) === size) {
+        btn.className = btn.className.replace('bg-slate-700', 'bg-blue-600').replace('text-slate-300', 'text-white');
+      } else {
+        btn.className = btn.className.replace('bg-blue-600', 'bg-slate-700').replace('text-white', 'text-slate-300');
+      }
+    });
+  }
+
+  // 滚动进度
+  function updateScrollProgress() {
+    const windowHeight = window.innerHeight;
+    const documentHeight = document.documentElement.scrollHeight;
+    const scrollTop = window.scrollY;
+    const progress = (scrollTop / (documentHeight - windowHeight)) * 100;
+    const progressValue = Math.min(100, Math.max(0, progress));
+    progressBar.style.width = `${progressValue}%`;
+  }
+
+  // 跳转章节
+  function goToChapter(chapterNum) {
+    console.log(`跳转到第${chapterNum}章`);
+    toggleCatalog();
+  }
+
+  // 初始化应用
+  document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
