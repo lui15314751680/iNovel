@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>阅读页面 - 书海阁</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Noto+Serif+SC:wght@400;500;600&display=swap');
+
+    * {
+      font-family: 'Noto Sans SC', sans-serif;
+    }
+
+    :root {
+      --color-primary: #1e40af;
+      --color-primary-light: #3b82f6;
+      --color-accent: #10b981;
+      --color-bg-dark: #0f172a;
+      --color-bg-darker: #020617;
+      --color-bg-card: #1e293b;
+      --color-text: #f1f5f9;
+      --color-text-muted: #94a3b8;
+    }
+
+    body {
+      background: var(--color-bg-dark);
+      color: var(--color-text);
+    }
+
+    .gradient-text {
+      background: linear-gradient(135deg, #3b82f6 0%, #10b981 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* 阅读区域样式 */
+    .reading-content {
+      font-family: 'Noto Serif SC', serif;
+      line-height: 2;
+      text-align: justify;
+    }
+
+    .reading-content p {
+      margin-bottom: 1.5em;
+      text-indent: 2em;
+    }
+
+    /* 主题样式 */
+    body.theme-light {
+      background: #f8fafc;
+      color: #1e293b;
+    }
+
+    body.theme-light .bg-slate-900 {
+      background: #ffffff !important;
+      border-color: #e2e8f0 !important;
+    }
+
+    body.theme-light .bg-slate-800 {
+      background: #f1f5f9 !important;
+    }
+
+    body.theme-light .text-slate-300,
+    body.theme-light .text-slate-400 {
+      color: #64748b !important;
+    }
+
+    body.theme-light .text-white {
+      color: #1e293b !important;
+    }
+
+    body.theme-sepia {
+      background: #f4ecd8;
+      color: #5c4a2f;
+    }
+
+    body.theme-sepia .bg-slate-900 {
+      background: #faf6ed !important;
+      border-color: #e8dcc3 !important;
+    }
+
+    body.theme-sepia .bg-slate-800 {
+      background: #f4ecd8 !important;
+    }
+
+    body.theme-sepia .text-slate-300,
+    body.theme-sepia .text-slate-400,
+    body.theme-sepia .text-white {
+      color: #5c4a2f !important;
+    }
+
+    body.theme-green {
+      background: #cce8cc;
+      color: #1a3d1a;
+    }
+
+    body.theme-green .bg-slate-900 {
+      background: #e6f4e6 !important;
+      border-color: #b8ddb8 !important;
+    }
+
+    body.theme-green .bg-slate-800 {
+      background: #cce8cc !important;
+    }
+
+    body.theme-green .text-slate-300,
+    body.theme-green .text-slate-400,
+    body.theme-green .text-white {
+      color: #1a3d1a !important;
+    }
+
+    /* 设置面板 */
+    .settings-panel {
+      position: fixed;
+      bottom: 80px;
+      right: 20px;
+      background: var(--color-bg-card);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+      z-index: 100;
+      min-width: 280px;
+      display: none;
+    }
+
+    .settings-panel.active {
+      display: block;
+    }
+
+    /* 目录面板 */
+    .catalog-panel {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 50;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 4px;
+    }
+
+    .catalog-panel.active {
+      display: flex;
+    }
+
+    .catalog-content {
+      background: var(--color-bg-card);
+      border-radius: 1rem;
+      width: 100%;
+      max-width: 42rem;
+      max-height: 80vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* 进度条 */
+    .progress-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #3b82f6 0%, #10b981 100%);
+      transition: width 0.1s ease;
+      z-index: 1000;
+    }
+
+    /* 加载中样式 */
+    .loading {
+      text-align: center;
+      padding: 2rem;
+      color: var(--color-text-muted);
+    }
+
+    /* 加载动画 */
+    .btn-loading {
+      position: relative;
+      pointer-events: none;
+    }
+
+    .btn-loading i:not(.loader) {
+      display: none;
+    }
+
+    .btn-loading .loader {
+      display: inline-block !important;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+<div class="min-h-screen pb-20">
+  <!-- 进度条 -->
+  <div class="progress-bar" id="progressBar"></div>
+
+  <!-- 顶部导航 -->
+  <nav class="bg-slate-900 border-b border-slate-800 sticky top-0 z-50">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-14">
+        <div class="flex items-center gap-4">
+          <a href="/book-detail?eid=${currentEid}" class="text-slate-300 hover:text-white">
+            <i data-lucide="arrow-left" class="w-5 h-5"></i>
+          </a>
+          <div class="hidden sm:block">
+            <div class="font-medium text-sm truncate max-w-xs" id="bookTitle">加载中...</div>
+            <div class="text-xs text-slate-400" id="chapterSubtitle">加载中...</div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button id="toggleCatalogBtn" class="p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors">
+            <i data-lucide="list" class="w-5 h-5"></i>
+          </button>
+          <button id="toggleSettingsBtn" class="p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors">
+            <i data-lucide="settings" class="w-5 h-5"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- 主要内容 -->
+  <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- 章节标题 -->
+    <div class="text-center mb-12">
+      <h1 class="text-3xl font-bold mb-2" id="chapterTitle">加载中...</h1>
+      <div class="flex items-center justify-center gap-4 text-sm text-slate-400">
+        <span id="wordCount">字数：--</span>
+        <span id="updateTime">更新时间：2024-01-01</span>
+      </div>
+    </div>
+
+    <!-- 章节内容（默认显示加载中） -->
+    <div class="reading-content mb-12" id="readingContent">
+      <div class="loading">
+        <i data-lucide="loader-2" class="w-8 h-8 animate-spin inline-block"></i>
+        <p>正在加载章节内容...</p>
+      </div>
+    </div>
+
+    <!-- 章节导航 -->
+    <div class="flex items-center justify-between py-8 border-t border-slate-800">
+      <button id="prevChapterBtn" class="flex items-center gap-2 bg-slate-800 px-6 py-3 rounded-lg opacity-50 cursor-not-allowed">
+        <i data-lucide="chevron-left" class="w-5 h-5"></i>
+        <span>上一章</span>
+      </button>
+
+      <button id="openCatalogBtn" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg transition-colors">
+        <i data-lucide="list" class="w-5 h-5"></i>
+        <span>目录</span>
+      </button>
+
+      <button id="nextChapterBtn" class="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 px-6 py-3 rounded-lg opacity-50 cursor-not-allowed">
+        <span>下一章</span>
+        <i data-lucide="chevron-right" class="w-5 h-5"></i>
+      </button>
+    </div>
+  </main>
+
+  <!-- 底部工具栏 -->
+  <div class="fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-800 z-40">
+    <div class="max-w-4xl mx-auto px-4 py-3">
+      <div class="flex items-center justify-between">
+        <button id="mobilePrevBtn" class="flex items-center gap-1 text-slate-300 hover:text-white text-sm opacity-50 cursor-not-allowed">
+          <i data-lucide="chevron-left" class="w-4 h-4"></i>
+          <span class="hidden sm:inline">上一章</span>
+        </button>
+        <div class="flex items-center gap-4">
+          <button class="p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors">
+            <i data-lucide="bookmark" class="w-5 h-5"></i>
+          </button>
+          <button id="mobileCatalogBtn" class="p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors">
+            <i data-lucide="list" class="w-5 h-5"></i>
+          </button>
+          <button id="mobileSettingsBtn" class="p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors">
+            <i data-lucide="settings" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <button id="mobileNextBtn" class="flex items-center gap-1 text-slate-300 hover:text-white text-sm opacity-50 cursor-not-allowed">
+          <span class="hidden sm:inline">下一章</span>
+          <i data-lucide="chevron-right" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 设置面板 -->
+  <div class="settings-panel" id="settingsPanel">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="font-bold">阅读设置</h3>
+      <button id="closeSettingsBtn" class="text-slate-400 hover:text-white">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+    </div>
+
+    <!-- 字体大小 -->
+    <div class="mb-6">
+      <div class="text-sm text-slate-400 mb-3">字体大小</div>
+      <div class="flex items-center gap-2">
+        <button class="font-size-btn px-3 py-2 rounded-lg text-sm transition-colors bg-slate-700 text-slate-300 hover:bg-slate-600" data-size="14">14</button>
+        <button class="font-size-btn px-3 py-2 rounded-lg text-sm transition-colors bg-slate-700 text-slate-300 hover:bg-slate-600" data-size="16">16</button>
+        <button class="font-size-btn px-3 py-2 rounded-lg text-sm transition-colors bg-blue-600 text-white" data-size="18">18</button>
+        <button class="font-size-btn px-3 py-2 rounded-lg text-sm transition-colors bg-slate-700 text-slate-300 hover:bg-slate-600" data-size="20">20</button>
+        <button class="font-size-btn px-3 py-2 rounded-lg text-sm transition-colors bg-slate-700 text-slate-300 hover:bg-slate-600" data-size="22">22</button>
+        <button class="font-size-btn px-3 py-2 rounded-lg text-sm transition-colors bg-slate-700 text-slate-300 hover:bg-slate-600" data-size="24">24</button>
+      </div>
+    </div>
+
+    <!-- 主题 -->
+    <div>
+      <div class="text-sm text-slate-400 mb-3">阅读主题</div>
+      <div class="grid grid-cols-2 gap-2">
+        <button class="theme-btn flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors bg-blue-600 text-white" data-theme="dark">
+          <div class="w-4 h-4 rounded" style="background: #0f172a;"></div>
+          <span>夜间</span>
+        </button>
+        <button class="theme-btn flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors bg-slate-700 text-slate-300 hover:bg-slate-600" data-theme="light">
+          <div class="w-4 h-4 rounded" style="background: #f8fafc;"></div>
+          <span>日间</span>
+        </button>
+        <button class="theme-btn flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors bg-slate-700 text-slate-300 hover:bg-slate-600" data-theme="sepia">
+          <div class="w-4 h-4 rounded" style="background: #f4ecd8;"></div>
+          <span>护眼</span>
+        </button>
+        <button class="theme-btn flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors bg-slate-700 text-slate-300 hover:bg-slate-600" data-theme="green">
+          <div class="w-4 h-4 rounded" style="background: #cce8cc;"></div>
+          <span>绿色</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 目录面板 -->
+  <div class="catalog-panel" id="catalogPanel">
+    <div class="catalog-content">
+      <div class="flex items-center justify-between p-6 border-b border-slate-700">
+        <h3 class="text-xl font-bold">章节目录</h3>
+        <button id="closeCatalogBtn" class="text-slate-400 hover:text-white">
+          <i data-lucide="x" class="w-6 h-6"></i>
+        </button>
+      </div>
+
+      <div class="overflow-y-auto p-6" id="catalogList">
+        <div class="loading">
+          <i data-lucide="loader-2" class="w-8 h-8 animate-spin inline-block"></i>
+          <p>正在加载目录...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // 初始化Lucide图标
+  document.addEventListener('DOMContentLoaded', function() {
+    lucide.createIcons();
+
+    // 处理"开始阅读"按钮的点击事件（适用于上一个页面）
+    initReadButtons();
+
+    // 页面元素
+    const progressBar = document.getElementById('progressBar');
+    const readingContent = document.getElementById('readingContent');
+    const settingsPanel = document.getElementById('settingsPanel');
+    const catalogPanel = document.getElementById('catalogPanel');
+    const catalogList = document.getElementById('catalogList');
+    const chapterTitle = document.getElementById('chapterTitle');
+    const chapterSubtitle = document.getElementById('chapterSubtitle');
+    const bookTitle = document.getElementById('bookTitle');
+    const wordCount = document.getElementById('wordCount');
+
+    // 章节导航按钮
+    const prevChapterBtn = document.getElementById('prevChapterBtn');
+    const nextChapterBtn = document.getElementById('nextChapterBtn');
+    const mobilePrevBtn = document.getElementById('mobilePrevBtn');
+    const mobileNextBtn = document.getElementById('mobileNextBtn');
+
+    // 状态变量
+    let currentFontSize = 18;
+    let currentTheme = 'dark';
+    let currentCnum = 1; // 当前章节号，默认为1
+    let currentEid = null;  // 当前书籍ID
+    let currentBookName = "诡秘之主"; // 当前书籍名称
+    let allChapters = [];   // 所有章节列表
+    let bookInfo = {        // 书籍信息
+      title: ''
+    };
+
+    // 从URL获取参数
+    function getUrlParams() {
+      const params = new URLSearchParams(window.location.search);
+      return {
+        bookname: params.get('bookname') || '',
+        eid: params.get('eid') ? parseInt(params.get('eid')) : 1,
+        cnum: params.get('cnum') ? parseInt(params.get('cnum')) : 1
+      };
+    }
+
+    // 初始化"开始阅读"按钮事件（上一个页面使用）
+    function initReadButtons() {
+      // 查找所有带有bookname属性的阅读按钮
+      document.querySelectorAll('a[href^="/read?"]').forEach(link => {
+        // 从href中提取书籍名称，例如从"/read?诡秘之主"中提取"诡秘之主"
+        const bookName = link.getAttribute('href').replace('/read?', '');
+
+        if (bookName) {
+          // 为链接添加点击事件
+          link.addEventListener('click', async function(e) {
+            e.preventDefault(); // 阻止默认跳转
+
+            const button = link.querySelector('button');
+            if (button) {
+              // 保存原始HTML
+              const originalHtml = button.innerHTML;
+              // 显示加载状态
+              button.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 loader"></i><span>加载中...</span>';
+              button.classList.add('btn-loading');
+
+              try {
+                // 调用接口获取eid
+                const eid = await getEidByName(bookName);
+
+                // 获取成功后跳转到阅读页面，携带eid和bookname参数
+                window.location.href = `/read?eid=${eid}&bookname=${encodeURIComponent(bookName)}&cnum=1`;
+              } catch (error) {
+                // 恢复按钮状态
+                button.innerHTML = originalHtml;
+                button.classList.remove('btn-loading');
+                alert(`无法开始阅读：${error.message}`);
+              }
+            }
+          });
+        }
+      });
+    }
+
+    // 初始化阅读页面
+    async function initReadingPage() {
+      const { bookname, eid, cnum } = getUrlParams();
+
+      currentBookName = bookname;
+      currentCnum = cnum;
+
+      // 如果URL中有bookname但没有eid，则通过bookname获取eid
+      if (bookname && !eid) {
+        try {
+          currentEid = await getEidByName(bookname);
+        } catch (error) {
+          readingContent.innerHTML = `<div class="loading"><p>获取书籍信息失败：${error.message}</p></div>`;
+          return;
+        }
+      } else if (eid) {
+        currentEid = eid;
+      } else {
+        readingContent.innerHTML = '<div class="loading"><p>缺少书籍参数</p></div>';
+        return;
+      }
+
+      // 并行加载章节内容和目录
+      try {
+        await Promise.all([
+          loadChapterContent(currentEid, currentCnum),
+          loadBookChapters(currentEid)
+        ]);
+        updateChapterNavigation();
+      } catch (error) {
+        readingContent.innerHTML = `<div class="loading"><p>加载失败：${error.message}</p></div>`;
+      }
+
+      // 初始化其他功能
+      restoreSettings();
+      bindEvents();
+      updateScrollProgress();
+    }
+
+    // 通过书籍名称获取eid
+    async function getEidByName(bookName) {
+      try {
+        const response = await fetch(`/ebook/eidByName?name=${encodeURIComponent(bookName)}`);
+        if (!response.ok) {
+          throw new Error('获取书籍信息失败');
+        }
+        const eid = await response.text();
+        if (!eid || isNaN(eid)) {
+          throw new Error('未找到该书籍');
+        }
+        return parseInt(eid);
+      } catch (error) {
+        console.error('获取eid失败:', error);
+        throw error;
+      }
+    }
+
+    // 加载章节内容（使用接口 /chapter/contentByEidAndCnum）
+    async function loadChapterContent(eid, cnum) {
+      readingContent.innerHTML = '<div class="loading"><i data-lucide="loader-2" class="w-8 h-8 animate-spin inline-block"></i><p>正在加载章节内容...</p></div>';
+
+      try {
+        // 调用接口，传递eid和cnum参数
+        const response = await fetch(`/chapter/contentByEidAndCnum?eid=${eid}&cid=${cnum}`);
+        if (!response.ok) throw new Error('章节内容加载失败');
+
+        const content = await response.text();
+        if (content === 'unknown') throw new Error('章节不存在');
+
+        // 格式化内容（将换行转为段落）
+        const formattedContent = content
+                .split('\n')
+                .filter(paragraph => paragraph.trim() !== '')
+                .map(paragraph => `<p>${paragraph}</p>`)
+                .join('');
+
+        // 更新页面内容
+        readingContent.innerHTML = formattedContent;
+
+        // 获取章节标题（从目录列表中匹配）
+        const chapterInfo = allChapters.find(ch => ch.cnum === cnum) || {};
+        chapterTitle.textContent = chapterInfo.ctitle || `第${cnum}章`;
+        chapterSubtitle.textContent = chapterTitle.textContent;
+        wordCount.textContent = `字数：${content.length}`;
+
+        // 更新书籍标题
+        bookTitle.textContent = currentBookName || bookInfo.title || `书籍ID: ${eid}`;
+
+        currentCnum = cnum;
+        window.scrollTo(0, 0); // 滚动到顶部
+      } catch (error) {
+        readingContent.innerHTML = `<div class="loading"><p>${error.message}</p></div>`;
+        throw error;
+      }
+    }
+
+    // 加载指定书籍的所有章节
+    async function loadBookChapters(eid) {
+      try {
+        // 获取指定书籍的所有章节
+        const response = await fetch(`/chapter`);
+        if (!response.ok) throw new Error('目录加载失败');
+
+        // 假设后端返回所有章节的JSON数据
+        const allChaptersData = await response.json();
+
+        // 过滤出当前书籍的章节
+        allChapters = allChaptersData
+                .filter(ch => ch.eid === eid)
+                .sort((a, b) => a.cnum - b.cnum);
+
+        // 如果有书籍信息，保存下来
+        if (allChapters.length > 0) {
+          bookInfo.title = allChapters[0].ebookTitle || `书籍 ${eid}`;
+          if (!currentBookName) {
+            bookTitle.textContent = bookInfo.title;
+          }
+        }
+
+        if (allChapters.length === 0) {
+          catalogList.innerHTML = '<p class="text-center text-slate-400">暂无章节</p>';
+          return;
+        }
+
+        // 生成目录HTML
+        let catalogHTML = '';
+        allChapters.forEach(chapter => {
+          const isActive = chapter.cnum === currentCnum;
+          catalogHTML += `
+            <button class="chapter-btn text-left p-3 rounded-lg hover:bg-slate-700 transition-colors ${isActive ? 'bg-blue-600 text-white' : 'text-slate-300'}"
+                    data-cnum="${chapter.cnum}">
+              第${chapter.cnum}章 ${chapter.ctitle || ''}
+            </button>
+          `;
+        });
+
+        // 分两列显示
+        const half = Math.ceil(allChapters.length / 2);
+        const firstHalf = catalogHTML.slice(0, catalogHTML.indexOf(`data-cnum="${allChapters[half]?.cnum}"`));
+        const secondHalf = catalogHTML.slice(catalogHTML.indexOf(`data-cnum="${allChapters[half]?.cnum}"`) || catalogHTML.length);
+
+        catalogList.innerHTML = `
+          <div class="grid sm:grid-cols-2 gap-2">
+            ${firstHalf}
+            ${secondHalf}
+          </div>
+        `;
+
+        // 绑定目录点击事件
+        document.querySelectorAll('.chapter-btn').forEach(btn => {
+          btn.addEventListener('click', function() {
+            const cnum = parseInt(this.getAttribute('data-cnum'));
+            if (cnum !== currentCnum) {
+              loadChapterContent(currentEid, cnum);
+              // 更新URL参数
+              const params = new URLSearchParams();
+              params.append('eid', currentEid);
+              params.append('cnum', cnum);
+              if (currentBookName) {
+                params.append('bookname', currentBookName);
+              }
+              window.history.pushState(null, null, `?${params.toString()}`);
+              hideCatalog();
+            }
+          });
+        });
+      } catch (error) {
+        catalogList.innerHTML = `<p class="text-center text-slate-400">目录加载失败</p>`;
+        console.error('目录加载错误:', error);
+        throw error;
+      }
+    }
+
+    // 更新章节导航按钮状态
+    function updateChapterNavigation() {
+      if (allChapters.length === 0) return;
+
+      // 获取当前书籍的章节号列表
+      const chapterNumbers = allChapters.map(ch => ch.cnum);
+
+      // 找到当前章节索引
+      const currentIndex = chapterNumbers.indexOf(currentCnum);
+      const hasPrev = currentIndex > 0;
+      const hasNext = currentIndex < chapterNumbers.length - 1;
+
+      // 更新上一章按钮
+      [prevChapterBtn, mobilePrevBtn].forEach(btn => {
+        if (hasPrev) {
+          btn.classList.remove('opacity-50', 'cursor-not-allowed');
+          btn.classList.add('hover:bg-slate-700');
+          btn.onclick = () => {
+            const prevCnum = chapterNumbers[currentIndex - 1];
+            loadChapterContent(currentEid, prevCnum);
+            // 更新URL参数
+            const params = new URLSearchParams();
+            params.append('eid', currentEid);
+            params.append('cnum', prevCnum);
+            if (currentBookName) {
+              params.append('bookname', currentBookName);
+            }
+            window.history.pushState(null, null, `?${params.toString()}`);
+          };
+        } else {
+          btn.classList.add('opacity-50', 'cursor-not-allowed');
+          btn.classList.remove('hover:bg-slate-700');
+          btn.onclick = null;
+        }
+      });
+
+      // 更新下一章按钮
+      [nextChapterBtn, mobileNextBtn].forEach(btn => {
+        if (hasNext) {
+          btn.classList.remove('opacity-50', 'cursor-not-allowed');
+          btn.classList.add('hover:bg-slate-700');
+          btn.onclick = () => {
+            const nextCnum = chapterNumbers[currentIndex + 1];
+            loadChapterContent(currentEid, nextCnum);
+            // 更新URL参数
+            const params = new URLSearchParams();
+            params.append('eid', currentEid);
+            params.append('cnum', nextCnum);
+            if (currentBookName) {
+              params.append('bookname', currentBookName);
+            }
+            window.history.pushState(null, null, `?${params.toString()}`);
+          };
+        } else {
+          btn.classList.add('opacity-50', 'cursor-not-allowed');
+          btn.classList.remove('hover:bg-slate-700');
+          btn.onclick = null;
+        }
+      });
+    }
+
+    // 更新滚动进度
+    function updateScrollProgress() {
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight;
+      const scrollTop = window.scrollY;
+      const progress = (scrollTop / (documentHeight - windowHeight)) * 100;
+      progressBar.style.width = Math.min(100, Math.max(0, progress)) + '%';
+    }
+
+    // 切换设置面板显示
+    function toggleSettings() {
+      settingsPanel.classList.toggle('active');
+      if (settingsPanel.classList.contains('active')) {
+        hideCatalog();
+      }
+    }
+
+    // 隐藏设置面板
+    function hideSettings() {
+      settingsPanel.classList.remove('active');
+    }
+
+    // 切换目录面板显示
+    function toggleCatalog() {
+      catalogPanel.classList.toggle('active');
+      if (catalogPanel.classList.contains('active')) {
+        hideSettings();
+      }
+    }
+
+    // 隐藏目录面板
+    function hideCatalog() {
+      catalogPanel.classList.remove('active');
+    }
+
+    // 改变字体大小
+    function changeFontSize(size) {
+      currentFontSize = parseInt(size);
+      readingContent.style.fontSize = currentFontSize + 'px';
+
+      // 更新按钮状态
+      document.querySelectorAll('.font-size-btn').forEach(btn => {
+        if (parseInt(btn.getAttribute('data-size')) === currentFontSize) {
+          btn.classList.remove('bg-slate-700', 'text-slate-300', 'hover:bg-slate-600');
+          btn.classList.add('bg-blue-600', 'text-white');
+        } else {
+          btn.classList.remove('bg-blue-600', 'text-white');
+          btn.classList.add('bg-slate-700', 'text-slate-300', 'hover:bg-slate-600');
+        }
+      });
+
+      // 保存到本地存储
+      localStorage.setItem('reading-font-size', currentFontSize);
+    }
+
+    // 改变主题
+    function changeTheme(theme) {
+      currentTheme = theme;
+
+      // 移除所有主题类
+      document.body.className = document.body.className
+              .split(' ')
+              .filter(cls => !cls.startsWith('theme-'))
+              .join(' ');
+
+      // 添加当前主题类
+      document.body.classList.add(`theme-${currentTheme}`);
+
+      // 更新按钮状态
+      document.querySelectorAll('.theme-btn').forEach(btn => {
+        if (btn.getAttribute('data-theme') === currentTheme) {
+          btn.classList.remove('bg-slate-700', 'text-slate-300', 'hover:bg-slate-600');
+          btn.classList.add('bg-blue-600', 'text-white');
+        } else {
+          btn.classList.remove('bg-blue-600', 'text-white');
+          btn.classList.add('bg-slate-700', 'text-slate-300', 'hover:bg-slate-600');
+        }
+      });
+
+      // 保存到本地存储
+      localStorage.setItem('reading-theme', currentTheme);
+    }
+
+    // 从本地存储恢复设置
+    function restoreSettings() {
+      const savedFontSize = localStorage.getItem('reading-font-size');
+      const savedTheme = localStorage.getItem('reading-theme');
+
+      if (savedFontSize) {
+        changeFontSize(savedFontSize);
+      }
+
+      if (savedTheme) {
+        changeTheme(savedTheme);
+      }
+    }
+
+    // 绑定事件
+    function bindEvents() {
+      // 滚动进度
+      window.addEventListener('scroll', updateScrollProgress);
+
+      // 设置面板
+      document.getElementById('toggleSettingsBtn').addEventListener('click', toggleSettings);
+      document.getElementById('mobileSettingsBtn').addEventListener('click', toggleSettings);
+      document.getElementById('closeSettingsBtn').addEventListener('click', hideSettings);
+
+      // 目录面板
+      document.getElementById('toggleCatalogBtn').addEventListener('click', toggleCatalog);
+      document.getElementById('openCatalogBtn').addEventListener('click', toggleCatalog);
+      document.getElementById('mobileCatalogBtn').addEventListener('click', toggleCatalog);
+      document.getElementById('closeCatalogBtn').addEventListener('click', hideCatalog);
+
+      // 点击目录面板外部关闭
+      catalogPanel.addEventListener('click', function(e) {
+        if (e.target === catalogPanel) {
+          hideCatalog();
+        }
+      });
+
+      // 字体大小按钮
+      document.querySelectorAll('.font-size-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          changeFontSize(this.getAttribute('data-size'));
+        });
+      });
+
+      // 主题按钮
+      document.querySelectorAll('.theme-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          changeTheme(this.getAttribute('data-theme'));
+        });
+      });
+    }
+
+    // 判断当前是否是阅读页面，是的话初始化阅读页面
+    if (window.location.pathname === '/read') {
+      initReadingPage();
+    }
+  });
+</script>
+</body>
+</html>

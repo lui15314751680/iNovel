@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>诡秘之主 - 书海阁</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+
+    * {
+      font-family: 'Noto Sans SC', sans-serif;
+    }
+
+    :root {
+      --color-primary: #1e40af;
+      --color-primary-light: #3b82f6;
+      --color-accent: #10b981;
+      --color-bg-dark: #0f172a;
+      --color-bg-darker: #020617;
+      --color-bg-card: #1e293b;
+      --color-text: #f1f5f9;
+      --color-text-muted: #94a3b8;
+    }
+
+    body {
+      background: var(--color-bg-dark);
+      color: var(--color-text);
+    }
+
+    .gradient-text {
+      background: linear-gradient(135deg, #3b82f6 0%, #10b981 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .book-cover {
+      aspect-ratio: 3/4;
+      object-fit: cover;
+    }
+
+    .chapter-item {
+      transition: all 0.2s ease;
+    }
+
+    .chapter-item:hover {
+      background: var(--color-bg-card);
+      transform: translateX(4px);
+    }
+
+    .tab-button {
+      position: relative;
+      transition: color 0.3s ease;
+    }
+
+    .tab-button.active::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--color-primary-light);
+    }
+
+    .stat-card {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(16, 185, 129, 0.1) 100%);
+      border: 1px solid rgba(59, 130, 246, 0.2);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+<div class="min-h-screen">
+  <!-- 顶部导航 -->
+  <nav class="bg-slate-900 border-b border-slate-800 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <div class="flex items-center gap-8">
+          <a href="/index" class="flex items-center gap-2">
+            <i data-lucide="book-open" class="w-8 h-8 text-blue-500"></i>
+            <span class="text-2xl font-bold gradient-text">书海阁</span>
+          </a>
+
+          <div class="hidden md:flex items-center gap-6">
+            <a href="/index" class="nav-link text-slate-300 hover:text-white text-sm font-medium">首页</a>
+            <a href="/category" class="nav-link text-slate-300 hover:text-white text-sm font-medium">分类</a>
+            <a href="/author-center" class="nav-link text-slate-300 hover:text-white text-sm font-medium">作者中心</a>
+            <a href="/user-center" class="text-slate-300 hover:text-white text-sm font-medium">个人中心</a>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-4">
+          <div class="hidden sm:flex items-center bg-slate-800 rounded-lg px-4 py-2 w-64">
+            <i data-lucide="search" class="w-4 h-4 text-slate-400"></i>
+            <input type="text" placeholder="搜索书名、作者"
+                   class="bg-transparent border-none outline-none ml-2 text-sm text-slate-300 placeholder-slate-500 w-full" />
+          </div>
+
+          <a href="/log">
+            <button class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+              <i data-lucide="user" class="w-4 h-4"></i>
+              <span class="hidden sm:inline">登录</span>
+            </button>
+          </a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+    <div class="flex items-center gap-2 text-sm text-slate-400">
+      <a href="/index" class="hover:text-white">首页</a>
+      <i data-lucide="chevron-right" class="w-4 h-4"></i>
+      <a href="/category" class="hover:text-white">玄幻</a>
+      <i data-lucide="chevron-right" class="w-4 h-4"></i>
+      <span class="text-white">诡秘之主</span>
+    </div>
+  </div>
+
+  <!-- 主要内容 -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+    <!-- 书籍信息区 -->
+    <div class="bg-slate-800 rounded-2xl p-8 mb-8">
+      <div class="flex flex-col lg:flex-row gap-8">
+        <!-- 封面 -->
+        <div class="flex-shrink-0">
+          <img id="guimiImage"
+               height="400"
+               width="300"
+               alt="诡秘之主"
+               class="book-cover w-64 rounded-xl shadow-2xl"
+               src="/templates/images/default.webp">
+        </div>
+
+        <!-- 信息 -->
+        <div class="flex-1">
+          <h1 class="text-4xl font-bold mb-4">诡秘之主</h1>
+
+          <div class="flex items-center gap-6 mb-6 text-slate-300">
+            <div class="flex items-center gap-2">
+              <i data-lucide="user" class="w-4 h-4"></i>
+              <span>爱潜水的乌贼</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <i data-lucide="tag" class="w-4 h-4"></i>
+              <span>玄幻</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <i data-lucide="check-circle" class="w-4 h-4"></i>
+              <span>完结</span>
+            </div>
+          </div>
+
+          <!-- 评分和统计 -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+            <div class="stat-card rounded-lg p-4 text-center">
+              <div class="text-3xl font-bold text-yellow-500 mb-1">9.5</div>
+              <div class="text-sm text-slate-400">评分</div>
+            </div>
+            <div class="stat-card rounded-lg p-4 text-center">
+              <div class="text-3xl font-bold text-blue-500 mb-1">1394</div>
+              <div class="text-sm text-slate-400">章节</div>
+            </div>
+            <div class="stat-card rounded-lg p-4 text-center">
+              <div class="text-2xl font-bold text-green-500 mb-1">1.2亿</div>
+              <div class="text-sm text-slate-400">阅读</div>
+            </div>
+            <div class="stat-card rounded-lg p-4 text-center">
+              <div class="text-2xl font-bold text-purple-500 mb-1">580万</div>
+              <div class="text-sm text-slate-400">收藏</div>
+            </div>
+          </div>
+
+          <!-- 标签 -->
+          <div class="flex flex-wrap gap-2 mb-6">
+            <span class="bg-slate-700 px-3 py-1 rounded-full text-sm">克苏鲁</span>
+            <span class="bg-slate-700 px-3 py-1 rounded-full text-sm">蒸汽朋克</span>
+            <span class="bg-slate-700 px-3 py-1 rounded-full text-sm">西幻</span>
+            <span class="bg-slate-700 px-3 py-1 rounded-full text-sm">群像</span>
+            <span class="bg-slate-700 px-3 py-1 rounded-full text-sm">智斗</span>
+          </div>
+
+          <!-- 简介 -->
+          <p class="text-slate-300 leading-relaxed mb-6">蒸汽与机械的浪潮中，谁能触及非凡？历史和黑暗的迷雾里，又是谁在耳语？我从诡秘中醒来，睁眼看见这个世界：枪械，大炮，巨舰，飞空艇，差分机；魔药，占卜，诅咒，倒吊人，封印物……光明依旧照耀，神秘从未远离，这是一段"愚者"的传说。</p>
+
+          <!-- 操作按钮 -->
+          <div class="flex flex-wrap gap-4">
+            <a href="/read">
+              <button class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-medium transition-colors">
+                <i data-lucide="book-open" class="w-5 h-5"></i>
+                开始阅读
+              </button>
+            </a>
+            <button class="flex items-center gap-2 bg-slate-700 hover:bg-slate-600 px-6 py-3 rounded-lg font-medium transition-colors">
+              <i data-lucide="bookmark" class="w-5 h-5"></i>
+              加入书架
+            </button>
+            <button class="flex items-center gap-2 bg-slate-700 hover:bg-slate-600 px-6 py-3 rounded-lg font-medium transition-colors">
+              <i data-lucide="download" class="w-5 h-5"></i>
+              下载
+            </button>
+            <button class="flex items-center gap-2 bg-slate-700 hover:bg-slate-600 px-6 py-3 rounded-lg font-medium transition-colors">
+              <i data-lucide="share-2" class="w-5 h-5"></i>
+              分享
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 标签页 -->
+    <div class="bg-slate-800 rounded-2xl overflow-hidden">
+      <!-- 标签头 -->
+      <div class="flex border-b border-slate-700">
+        <button class="tab-button active px-6 py-4 font-medium transition-colors text-blue-400" data-tab="chapters">
+          章节目录
+        </button>
+        <button class="tab-button px-6 py-4 font-medium transition-colors text-slate-400 hover:text-white" data-tab="comments">
+          书评 (3)
+        </button>
+        <button class="tab-button px-6 py-4 font-medium transition-colors text-slate-400 hover:text-white" data-tab="recommendations">
+          相关推荐
+        </button>
+      </div>
+
+      <!-- 章节目录 -->
+      <div class="tab-content active p-6" id="chapters">
+        <!-- 章节工具栏 -->
+        <div class="flex flex-col sm:flex-row gap-4 mb-6">
+          <div class="flex-1 flex items-center bg-slate-700 rounded-lg px-4 py-2">
+            <i data-lucide="search" class="w-4 h-4 text-slate-400"></i>
+            <input type="text" id="chapterSearch" placeholder="搜索章节..."
+                   class="bg-transparent border-none outline-none ml-2 text-sm text-slate-300 placeholder-slate-500 w-full" />
+          </div>
+          <button id="toggleSort"
+                  class="flex items-center gap-2 bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-lg transition-colors">
+            <i data-lucide="arrow-up" class="w-4 h-4" id="sortIcon"></i>
+            <span id="sortText">正序</span>
+          </button>
+        </div>
+
+        <!-- 章节列表 -->
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-[600px] overflow-y-auto" id="chapterList">
+          <!-- 章节项会通过JS动态生成 -->
+        </div>
+      </div>
+
+      <!-- 书评 -->
+      <div class="tab-content p-6" id="comments">
+        <div class="space-y-6">
+          <!-- 评论1 -->
+          <div class="bg-slate-700 rounded-lg p-6">
+            <div class="flex items-start gap-4">
+              <!-- /templates/images/DefaultAvatar.webp
+              https://c-ssl.duitang.com/uploads/blog/202207/08/20220708085308_9e340.jpg-->
+              <img src="/templates/images/DefaultAvatar.webp"
+                   height="40"
+                   width="40"
+                   alt="书友123"
+                   class="w-12 h-12 rounded-full"/>
+              <div class="flex-1">
+                <div class="flex items-center justify-between mb-2">
+                  <div>
+                    <div class="font-medium mb-1">书友123</div>
+                    <div class="flex items-center gap-1">
+                      <i data-lucide="star" class="w-4 h-4 text-yellow-500 fill-yellow-500"></i>
+                      <i data-lucide="star" class="w-4 h-4 text-yellow-500 fill-yellow-500"></i>
+                      <i data-lucide="star" class="w-4 h-4 text-yellow-500 fill-yellow-500"></i>
+                      <i data-lucide="star" class="w-4 h-4 text-yellow-500 fill-yellow-500"></i>
+                      <i data-lucide="star" class="w-4 h-4 text-yellow-500 fill-yellow-500"></i>
+                    </div>
+                  </div>
+                  <span class="text-sm text-slate-400">2024-01-15</span>
+                </div>
+                <p class="text-slate-300 mb-3 leading-relaxed">神作！克苏鲁风格的网文，设定严谨，伏笔众多，强烈推荐！</p>
+                <div class="flex items-center gap-4 text-sm text-slate-400">
+                  <button class="flex items-center gap-1 hover:text-blue-400 transition-colors">
+                    <i data-lucide="thumbs-up" class="w-4 h-4"></i>
+                    <span>1250</span>
+                  </button>
+                  <button class="flex items-center gap-1 hover:text-blue-400 transition-colors">
+                    <i data-lucide="message-circle" class="w-4 h-4"></i>
+                    <span>回复</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 评论2 -->
+          <div class="bg-slate-700 rounded-lg p-6">
+            <div class="flex items-start gap-4">
+              <!-- /templates/images/DefaultAvatar.webp
+              https://c-ssl.duitang.com/uploads/blog/202308/21/0GSwzEGzU0QmQml.jpeg-->
+              <img src="/templates/images/DefaultAvatar.webp"
+                   height="40"
+                   width="40"
+                   alt="夜行者"
+                   class="w-12 h-12 rounded-full"/>
+              <div class="flex-1">
+                <div class="flex items-center justify-between mb-2">
+                  <div>
+                    <div class="font-medium mb-1">夜行者</div>
+                    <div class="flex items-center gap-1">
+                      <i data-lucide="star" class="w-4 h-4 text-yellow-500 fill-yellow-500"></i>
+                      <i data-lucide="star" class="w-4 h-4 text-yellow-500 fill-yellow-500"></i>
+                      <i data-lucide="star" class="w-4 h-4 text-yellow-500 fill-yellow-500"></i>
+                      <i data-lucide="star" class="w-4 h-4 text-yellow-500 fill-yellow-500"></i>
+                      <i data-lucide="star" class="w-4 h-4 text-yellow-500 fill-yellow-500"></i>
+                    </div>
+                  </div>
+                  <span class="text-sm text-slate-400">2024-01-14</span>
+                </div>
+                <p class="text-slate-300 mb-3 leading-relaxed">乌贼的文笔一如既往的好，这本书的世界观构建非常完整。</p>
+                <div class="flex items-center gap-4 text-sm text-slate-400">
+                  <button class="flex items-center gap-1 hover:text-blue-400 transition-colors">
+                    <i data-lucide="thumbs-up" class="w-4 h-4"></i>
+                    <span>890</span>
+                  </button>
+                  <button class="flex items-center gap-1 hover:text-blue-400 transition-colors">
+                    <i data-lucide="message-circle" class="w-4 h-4"></i>
+                    <span>回复</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 评论3 -->
+          <div class="bg-slate-700 rounded-lg p-6">
+            <div class="flex items-start gap-4">
+              <img src="https://www.keaitupian.cn/cjpic/frombd/2/253/3570277888/3393481227.jpg?height=40&width=40" alt="追书人"
+                   class="w-12 h-12 rounded-full" />
+              <div class="flex-1">
+                <div class="flex items-center justify-between mb-2">
+                  <div>
+                    <div class="font-medium mb-1">追书人</div>
+                    <div class="flex items-center gap-1">
+                      <i data-lucide="star" class="w-4 h-4 text-yellow-500 fill-yellow-500"></i>
+                      <i data-lucide="star" class="w-4 h-4 text-yellow-500 fill-yellow-500"></i>
+                      <i data-lucide="star" class="w-4 h-4 text-yellow-500 fill-yellow-500"></i>
+                      <i data-lucide="star" class="w-4 h-4 text-yellow-500 fill-yellow-500"></i>
+                      <i data-lucide="star" class="w-4 h-4 text-slate-600"></i>
+                    </div>
+                  </div>
+                  <span class="text-sm text-slate-400">2024-01-13</span>
+                </div>
+                <p class="text-slate-300 mb-3 leading-relaxed">前期稍慢，但越往后越精彩，值得耐心看下去。</p>
+                <div class="flex items-center gap-4 text-sm text-slate-400">
+                  <button class="flex items-center gap-1 hover:text-blue-400 transition-colors">
+                    <i data-lucide="thumbs-up" class="w-4 h-4"></i>
+                    <span>456</span>
+                  </button>
+                  <button class="flex items-center gap-1 hover:text-blue-400 transition-colors">
+                    <i data-lucide="message-circle" class="w-4 h-4"></i>
+                    <span>回复</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 相关推荐 -->
+      <div class="tab-content p-6" id="recommendations">
+        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <!-- 推荐书籍1 -->
+          <a href="/book-detail" class="group">
+            <div class="relative mb-3 rounded-lg overflow-hidden">
+              <img id="dafImage"
+                   height="160"
+                   width="120"
+                   alt="大奉打更人"
+                   class="book-cover w-full group-hover:scale-105 transition-transform duration-300"
+                   src="/templates/images/default.webp">
+              <div class="absolute top-2 right-2 bg-yellow-500 text-slate-900 px-2 py-1 rounded text-xs font-bold">
+                9.2
+              </div>
+            </div>
+            <h4 class="font-medium mb-1 truncate group-hover:text-blue-400 transition-colors">
+              大奉打更人
+            </h4>
+            <p class="text-sm text-slate-400 truncate">卖报小郎君</p>
+          </a>
+
+          <!-- 推荐书籍2 -->
+          <a href="/book-detail" class="group">
+            <div class="relative mb-3 rounded-lg overflow-hidden">
+              <img id="mushImage"
+                   height="160"
+                   width="120"
+                   alt="牧神记"
+                   class="book-cover w-full group-hover:scale-105 transition-transform duration-300"
+                   src="/templates/images/default.webp">
+              <div class="absolute top-2 right-2 bg-yellow-500 text-slate-900 px-2 py-1 rounded text-xs font-bold">
+                9.0
+              </div>
+            </div>
+            <h4 class="font-medium mb-1 truncate group-hover:text-blue-400 transition-colors">
+              牧神记
+            </h4>
+            <p class="text-sm text-slate-400 truncate">宅猪</p>
+          </a>
+
+          <!-- 推荐书籍3 -->
+          <a href="/book-detail" class="group">
+            <div class="relative mb-3 rounded-lg overflow-hidden">
+              <img id="fanrenImage"
+                   height="160"
+                   width="120"
+                   alt="凡人修仙传"
+                   class="book-cover w-full group-hover:scale-105 transition-transform duration-300"
+                   src="/templates/images/default.webp">
+              <div class="absolute top-2 right-2 bg-yellow-500 text-slate-900 px-2 py-1 rounded text-xs font-bold">
+                9.3
+              </div>
+            </div>
+            <h4 class="font-medium mb-1 truncate group-hover:text-blue-400 transition-colors">
+              凡人修仙传
+            </h4>
+            <p class="text-sm text-slate-400 truncate">忘语</p>
+          </a>
+
+          <!-- 推荐书籍4 -->
+          <a href="/book-detail" class="group">
+            <div class="relative mb-3 rounded-lg overflow-hidden">
+              <img id="shxuImage"
+                   height="160"
+                   width="120"
+                   alt="圣墟"
+                   class="book-cover w-full group-hover:scale-105 transition-transform duration-300"
+                   src="/templates/images/default.webp">
+              <div class="absolute top-2 right-2 bg-yellow-500 text-slate-900 px-2 py-1 rounded text-xs font-bold">
+                8.8
+              </div>
+            </div>
+            <h4 class="font-medium mb-1 truncate group-hover:text-blue-400 transition-colors">
+              圣墟
+            </h4>
+            <p class="text-sm text-slate-400 truncate">辰东</p>
+          </a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- 页脚 -->
+  <footer class="bg-slate-900 border-t border-slate-800 mt-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 text-center text-sm text-slate-500">
+      <p>© 2025 书海阁. 保留所有权利.</p>
+    </div>
+  </footer>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // 初始化Lucide图标
+    lucide.createIcons();
+
+    // 标签页切换功能
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        // 移除所有标签的激活状态
+        tabButtons.forEach(btn => {
+          btn.classList.remove('active', 'text-blue-400');
+          btn.classList.add('text-slate-400', 'hover:text-white');
+        });
+
+        // 隐藏所有内容
+        tabContents.forEach(content => {
+          content.classList.remove('active');
+        });
+
+        // 激活当前标签
+        button.classList.add('active', 'text-blue-400');
+        button.classList.remove('text-slate-400', 'hover:text-white');
+
+        // 显示当前内容
+        const tabId = button.getAttribute('data-tab');
+        document.getElementById(tabId).classList.add('active');
+      });
+    });
+
+    // 章节数据和功能
+    let chapters = [];
+    let chapterSort = 'asc'; // 排序方式：正序(asc)或倒序(desc)
+    const chapterList = document.getElementById('chapterList');
+    const chapterSearch = document.getElementById('chapterSearch');
+    const toggleSort = document.getElementById('toggleSort');
+    const sortIcon = document.getElementById('sortIcon');
+    const sortText = document.getElementById('sortText');
+
+    // 生成章节数据
+    const chapterTitles = ['序幕', '红月', '占卜家', '塔罗会', '愚者', '正义', '倒吊人', '太阳', '月亮', '星星', '世界', '隐者', '审判', '战车', '力量', '节制', '命运之轮'];
+
+    for (let i = 1; i <= 100; i++) {
+      chapters.push({
+        id: i,
+        number: i,
+        title: `第${i}章 ${chapterTitles[i % chapterTitles.length]}`,
+        isVip: i > 50,
+        isRead: i <= 10
+      });
+    }
+
+    // 渲染章节列表
+    function renderChapters(chapterData) {
+      chapterList.innerHTML = '';
+
+      chapterData.forEach(chapter => {
+        const chapterItem = document.createElement('a');
+        chapterItem.href = '/read';
+        chapterItem.className = 'chapter-item flex items-center justify-between p-3 rounded-lg border border-slate-700';
+
+        let readIcon = '';
+        if (chapter.isRead) {
+          readIcon = '<i data-lucide="check" class="w-4 h-4 text-green-500 flex-shrink-0"></i>';
+        } else {
+          readIcon = '<i data-lucide="circle" class="w-4 h-4 text-slate-600 flex-shrink-0"></i>';
+        }
+
+        let vipIcon = '';
+        if (chapter.isVip) {
+          vipIcon = '<i data-lucide="lock" class="w-4 h-4 text-yellow-500"></i>';
+        }
+
+        chapterItem.innerHTML = `
+            <div class="flex items-center gap-3 flex-1 min-w-0">
+              ${readIcon}
+              <span class="truncate ${chapter.isRead ? 'text-slate-400' : 'text-slate-200'}">
+                ${chapter.title}
+              </span>
+            </div>
+            <div class="flex items-center gap-2 flex-shrink-0">
+              ${vipIcon}
+              <i data-lucide="chevron-right" class="w-4 h-4 text-slate-500"></i>
+            </div>
+          `;
+
+        chapterList.appendChild(chapterItem);
+      });
+
+      // 重新初始化图标
+      lucide.createIcons();
+    }
+
+    // 初始渲染章节
+    renderChapters(chapters);
+
+    // 切换排序
+    toggleSort.addEventListener('click', () => {
+      chapterSort = chapterSort === 'asc' ? 'desc' : 'asc';
+
+      // 更新排序图标和文字
+      if (chapterSort === 'asc') {
+        sortIcon.setAttribute('data-lucide', 'arrow-up');
+        sortText.textContent = '正序';
+      } else {
+        sortIcon.setAttribute('data-lucide', 'arrow-down');
+        sortText.textContent = '倒序';
+      }
+
+      // 重新渲染排序后的章节
+      const sortedChapters = [...chapters];
+      if (chapterSort === 'desc') {
+        sortedChapters.reverse();
+      }
+
+      // 应用搜索过滤
+      const searchTerm = chapterSearch.value.toLowerCase();
+      const filteredChapters = searchTerm
+              ? sortedChapters.filter(ch => ch.title.toLowerCase().includes(searchTerm))
+              : sortedChapters;
+
+      renderChapters(filteredChapters);
+      lucide.createIcons(); // 重新初始化图标
+    });
+
+    // 章节搜索功能
+    chapterSearch.addEventListener('input', () => {
+      const searchTerm = chapterSearch.value.toLowerCase();
+      let filteredChapters = chapters.filter(ch =>
+              ch.title.toLowerCase().includes(searchTerm)
+      );
+
+      // 应用排序
+      if (chapterSort === 'desc') {
+        filteredChapters.reverse();
+      }
+
+      renderChapters(filteredChapters);
+    });
+  });
+</script>
+<script>
+  function loadImage(elementId, bookName) {
+    const imgElement = document.getElementById(elementId);
+    if (!imgElement) {
+      console.error(`未找到ID为${elementId}的图片元素`);
+      return;
+    }
+
+    fetch(`/ebook?name=${encodeURIComponent(bookName)}`)
+            .then(response => {
+              if (!response.ok) throw new Error(`获取《${bookName}》图片失败`);
+              return response.text();
+            })
+            .then(imageUrl => {
+              imgElement.src = imageUrl; // 设置图片链接
+            })
+            .catch(error => {
+              console.error(error);
+              imgElement.src = '/images/error.jpg'; // 错误默认图
+            });
+  }
+
+  window.addEventListener('DOMContentLoaded', function() {
+    // 定义需要加载的图片信息：[元素ID, 书籍名称]
+    const imageList = [
+      ['doupoImage', '斗破苍穹'],
+      ['zhetianImage', '遮天'],
+      ['wanmeiImage', '完美世界'],
+      ['guimiImage', '诡秘之主'],
+      ['dafImage', '大奉打更人'],
+      ['mushImage', '牧神记'],
+      ['fanrenImage', '凡人修仙传'],
+      ['shxuImage', '圣墟'],
+      ['xuezhImage', '雪中悍刀行'],
+      ['zetianImage', '择天记'],
+      ['jianlaiImage', '剑来'],
+      ['yuanzunImage', '元尊']
+    ];
+
+    imageList.forEach(([elementId, bookName]) => {
+      loadImage(elementId, bookName);
+    });
+  });
+</script>
+</body>
+</html>

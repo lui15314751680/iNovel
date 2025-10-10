@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>个人中心 - 书海阁</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+
+    * {
+      font-family: 'Noto Sans SC', sans-serif;
+    }
+
+    :root {
+      --color-primary: #1e40af;
+      --color-primary-light: #3b82f6;
+      --color-accent: #10b981;
+      --color-bg-dark: #0f172a;
+      --color-bg-darker: #020617;
+      --color-bg-card: #1e293b;
+      --color-text: #f1f5f9;
+      --color-text-muted: #94a3b8;
+    }
+
+    body {
+      background: var(--color-bg-dark);
+      color: var(--color-text);
+    }
+
+    .gradient-text {
+      background: linear-gradient(135deg, #3b82f6 0%, #10b981 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .book-cover {
+      aspect-ratio: 3/4;
+      object-fit: cover;
+    }
+
+    .card-hover {
+      transition: all 0.3s ease;
+    }
+
+    .card-hover:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+    }
+
+    .tab-button {
+      position: relative;
+      transition: color 0.3s ease;
+    }
+
+    .tab-button.active::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--color-primary-light);
+    }
+
+    .stat-card {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(16, 185, 129, 0.1) 100%);
+      border: 1px solid rgba(59, 130, 246, 0.2);
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+  <div class="min-h-screen">
+    <!-- 顶部导航 -->
+    <nav class="bg-slate-900 border-b border-slate-800 sticky top-0 z-50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+          <div class="flex items-center gap-8">
+            <a href="/index" class="flex items-center gap-2">
+              <i data-lucide="book-open" class="w-8 h-8 text-blue-500"></i>
+              <span class="text-2xl font-bold gradient-text">书海阁</span>
+            </a>
+
+            <div class="hidden md:flex items-center gap-6">
+              <a href="/index" class="text-white text-sm font-medium">首页</a>
+              <a href="/category" class="nav-link text-slate-300 hover:text-white text-sm font-medium">分类</a>
+              <a href="/author-center" class="nav-link text-slate-300 hover:text-white text-sm font-medium">作者中心</a>
+              <a href="/user-center" class="text-slate-300 hover:text-white text-sm font-medium">个人中心</a>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-4">
+            <div class="relative">
+              <button id="notificationButton" class="p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors">
+                <i data-lucide="bell" class="w-5 h-5"></i>
+              </button>
+              <span id="unreadCount" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center hidden">
+                  0
+                </span>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <img id="userAvatar"
+                   src="https://picsum.photos/100/100?random=1"
+                   alt="用户头像"
+                   class="w-8 h-8 rounded-full" />
+              <span id="username" class="hidden sm:inline text-sm">书友123</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- 主要内容 -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- 用户信息卡片 -->
+      <div class="bg-slate-800 rounded-2xl p-8 mb-8">
+        <div class="flex flex-col md:flex-row items-center gap-8">
+          <!-- 头像和基本信息 -->
+          <div class="flex flex-col items-center">
+            <img id="userAvatarLarge"
+                 src="https://picsum.photos/100/100?random=1"
+                 alt="用户头像"
+                 class="w-24 h-24 rounded-full mb-4" />
+            <h2 id="usernameLarge" class="text-2xl font-bold mb-1">书友123</h2>
+            <div class="flex items-center gap-2 text-sm">
+                <span id="userLevel" class="bg-gradient-to-r from-blue-500 to-green-500 px-3 py-1 rounded-full font-medium">
+                  Lv.8
+                </span>
+            </div>
+          </div>
+
+          <!-- 统计信息 -->
+          <div class="flex-1 w-full">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+              <div class="stat-card rounded-lg p-4 text-center">
+                <div id="readingDays" class="text-2xl font-bold text-blue-500 mb-1">365</div>
+                <div class="text-sm text-slate-400">阅读天数</div>
+              </div>
+              <div class="stat-card rounded-lg p-4 text-center">
+                <div id="booksRead" class="text-2xl font-bold text-green-500 mb-1">128</div>
+                <div class="text-sm text-slate-400">读过的书</div>
+              </div>
+              <div class="stat-card rounded-lg p-4 text-center">
+                <div id="totalReadTime" class="text-2xl font-bold text-purple-500 mb-1">1250小时</div>
+                <div class="text-sm text-slate-400">阅读时长</div>
+              </div>
+              <div class="stat-card rounded-lg p-4 text-center">
+                <div id="bookshelfCount" class="text-2xl font-bold text-yellow-500 mb-1">6</div>
+                <div class="text-sm text-slate-400">书架藏书</div>
+              </div>
+            </div>
+
+            <!-- 经验条 -->
+            <div>
+              <div class="flex items-center justify-between text-sm mb-2">
+                <span class="text-slate-400">经验值</span>
+                <span id="expText" class="text-slate-300">7580 / 10000</span>
+              </div>
+              <div class="w-full bg-slate-700 rounded-full h-3 overflow-hidden">
+                <div id="expProgress" class="bg-gradient-to-r from-blue-500 to-green-500 h-full rounded-full transition-all duration-500"
+                     style="width: 75.8%">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 标签页 -->
+      <div class="bg-slate-800 rounded-2xl overflow-hidden">
+        <!-- 标签头 -->
+        <div class="flex border-b border-slate-700 overflow-x-auto">
+          <button id="bookshelfTab" data-tab="bookshelf"
+                  class="tab-button px-6 py-4 font-medium whitespace-nowrap transition-colors active text-blue-400">
+            我的书架
+          </button>
+          <button id="historyTab" data-tab="history"
+                  class="tab-button px-6 py-4 font-medium whitespace-nowrap transition-colors text-slate-400 hover:text-white">
+            阅读历史
+          </button>
+          <button id="commentsTab" data-tab="comments"
+                  class="tab-button px-6 py-4 font-medium whitespace-nowrap transition-colors text-slate-400 hover:text-white">
+            我的评论
+          </button>
+          <button id="messagesTab" data-tab="messages"
+                  class="tab-button px-6 py-4 font-medium whitespace-nowrap transition-colors relative text-slate-400 hover:text-white">
+            我的消息
+            <span id="messagesBadge" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center hidden">
+                2
+              </span>
+          </button>
+        </div>
+
+        <!-- 我的书架 -->
+        <div id="bookshelfContent" class="p-6">
+          <div id="bookshelfList" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
+            <!-- 书籍将通过JavaScript动态生成 -->
+          </div>
+        </div>
+
+        <!-- 阅读历史 -->
+        <div id="historyContent" class="p-6 hidden">
+          <div id="historyList" class="space-y-4">
+            <!-- 历史记录将通过JavaScript动态生成 -->
+          </div>
+        </div>
+
+        <!-- 我的评论 -->
+        <div id="commentsContent" class="p-6 hidden">
+          <div id="commentsList" class="space-y-4">
+            <!-- 评论将通过JavaScript动态生成 -->
+          </div>
+        </div>
+
+        <!-- 我的消息 -->
+        <div id="messagesContent" class="p-6 hidden">
+          <div id="messagesList" class="space-y-2">
+            <!-- 消息将通过JavaScript动态生成 -->
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-slate-900 border-t border-slate-800 mt-20">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 text-center text-sm text-slate-500">
+        <p>© 2025 书海阁. 保留所有权利.</p>
+      </div>
+    </footer>
+  </div>
+</div>
+
+<script>
+  // 初始化变量
+  let activeTab = 'bookshelf';
+
+  // 用户信息
+  const userInfo = {
+    username: '书友123',
+    avatar: 'https://c-ssl.duitang.com/uploads/blog/202211/15/20221115121911_a9ab2.png?height=100&width=100',
+    level: 8,
+    exp: 7580,
+    nextLevelExp: 10000,
+    joinDate: '2023-01-15',
+    readingDays: 365,
+    totalReadTime: '1250小时',
+    booksRead: 128
+  };
+
+  // 书架书籍
+  const bookshelfBooks = [
+    { id: 1, title: '诡秘之主', author: '爱潜水的乌贼', cover: 'https://ts4.tc.mm.bing.net/th/id/OIP-C.PRQEPbgwSHrhBj0-JMxUJAAAAA?cb=12&rs=1&pid=ImgDetMain&o=7&rm=3?height=300&width=225', progress: 85, lastChapter: '第1180章', updateTime: '2小时前', isUpdate: true },
+    { id: 2, title: '大奉打更人', author: '卖报小郎君', cover: 'https://pic1.zhimg.com/v2-5565c5027dea0e5c25998e4d1a8fe1a7_r.jpg?source=1def8aca?height=300&width=225', progress: 62, lastChapter: '第856章', updateTime: '1天前', isUpdate: true },
+    { id: 3, title: '牧神记', author: '宅猪', cover: 'https://picx.zhimg.com/v2-f4c2100f043cb00dc88c075948b0d009_720w.jpg?source=172ae18b?height=300&width=225', progress: 100, lastChapter: '完结', updateTime: '已完结', isUpdate: false },
+    { id: 4, title: '凡人修仙传', author: '忘语', cover: 'https://ts2.tc.mm.bing.net/th/id/OIP-C.qz9sSenKJ6OGznCSgyFJ5QHaLb?cb=12&rs=1&pid=ImgDetMain&o=7&rm=3?height=300&width=225', progress: 45, lastChapter: '第620章', updateTime: '3天前', isUpdate: false },
+    { id: 5, title: '圣墟', author: '辰东', cover: 'https://img.phb123.com/uploads/allimg/220824/810-220R41F3300-L.png?height=300&width=225', progress: 30, lastChapter: '第420章', updateTime: '5天前', isUpdate: false },
+    { id: 6, title: '雪中悍刀行', author: '烽火戏诸侯', cover: 'https://pic3.zhimg.com/v2-421e04f34f2ac42a6674b5ce0a00b927_r.jpg?source=1940ef5c?height=300&width=225', progress: 78, lastChapter: '第1050章', updateTime: '1周前', isUpdate: false }
+  ];
+
+  // 阅读历史
+  const readingHistory = [
+    { id: 1, title: '斗破苍穹', author: '天蚕土豆', cover: 'https://ts4.tc.mm.bing.net/th/id/OIP-C.RUfO3yKJJfp_BuRCgO4lAgHaKY?cb=12&rs=1&pid=ImgDetMain&o=7&rm=3?height=300&width=225', lastRead: '2024-01-20 14:30', chapter: '第856章' },
+    { id: 2, title: '完美世界', author: '辰东', cover: 'https://ts1.tc.mm.bing.net/th/id/R-C.b26535f820e16512b07f9af6b143a4c9?rik=IihSaH1YC5RgsA&riu=http%3a%2f%2fpuui.qpic.cn%2fvcover_vt_pic%2f0%2fmcv8hkc8zk8lnov1659888718397%2f0&ehk=WfIAO8Pjz%2bCq4ahoPsXyW7g13AP%2br%2b00nhxWchJ3s%2b4%3d&risl=&pid=ImgRaw&r=0?height=300&width=225', lastRead: '2024-01-19 20:15', chapter: '第1200章' },
+    { id: 3, title: '遮天', author: '辰东', cover: 'https://ts4.tc.mm.bing.net/th/id/OIP-C.G2MwpN-QbffMQWIjWnANvgHaJ4?cb=12&rs=1&pid=ImgDetMain&o=7&rm=3?height=300&width=225', lastRead: '2024-01-18 18:45', chapter: '第980章' },
+    { id: 4, title: '诡秘之主', author: '猫腻', cover: 'https://ts4.tc.mm.bing.net/th/id/OIP-C.PRQEPbgwSHrhBj0-JMxUJAAAAA?cb=12&rs=1&pid=ImgDetMain&o=7&rm=3?height=300&width=225', lastRead: '2024-01-17 22:00', chapter: '第650章' }
+  ];
+
+  // 我的评论
+  const myComments = [
+    { id: 1, bookTitle: '诡秘之主', content: '神作！克苏鲁风格的网文，设定严谨，伏笔众多，强烈推荐！', time: '2024-01-15', likes: 125 },
+    { id: 2, bookTitle: '大奉打更人', content: '卖报的文笔一如既往的好，这本书的世界观构建非常完整。', time: '2024-01-10', likes: 89 },
+    { id: 3, bookTitle: '牧神记', content: '宅猪的想象力真的很棒，故事情节跌宕起伏。', time: '2024-01-05', likes: 56 }
+  ];
+
+  // 我的消息
+  const messages = [
+    { id: 1, type: 'update', title: '《诡秘之主》更新了', content: '您收藏的小说更新了第1180章', time: '2小时前', isRead: false },
+    { id: 2, type: 'reply', title: '有人回复了你的评论', content: '用户"夜行者"回复了你在《大奉打更人》的评论', time: '1天前', isRead: false },
+    { id: 3, type: 'system', title: '系统通知', content: '恭喜你升级到Lv.8，获得10书币奖励', time: '3天前', isRead: true },
+    { id: 4, type: 'update', title: '《大奉打更人》更新了', content: '您收藏的小说更新了第856章', time: '1天前', isRead: true }
+  ];
+
+  // 初始化函数
+  function init() {
+    // 初始化用户信息
+    initUserInfo();
+
+    // 初始化书架
+    initBookshelf();
+
+    // 初始化阅读历史
+    initReadingHistory();
+
+    // 初始化评论
+    initComments();
+
+    // 初始化消息
+    initMessages();
+
+    // 添加事件监听器
+    addEventListeners();
+
+    // 初始化图标
+    lucide.createIcons();
+  }
+
+  // 初始化用户信息
+  function initUserInfo() {
+    document.getElementById('username').textContent = userInfo.username;
+    document.getElementById('usernameLarge').textContent = userInfo.username;
+    document.getElementById('userLevel').textContent = `Lv.${userInfo.level}`;
+    document.getElementById('readingDays').textContent = userInfo.readingDays;
+    document.getElementById('booksRead').textContent = userInfo.booksRead;
+    document.getElementById('totalReadTime').textContent = userInfo.totalReadTime;
+    document.getElementById('bookshelfCount').textContent = bookshelfBooks.length;
+    document.getElementById('expText').textContent = `${userInfo.exp} / ${userInfo.nextLevelExp}`;
+
+    const expProgress = (userInfo.exp / userInfo.nextLevelExp) * 100;
+    document.getElementById('expProgress').style.width = `${expProgress}%`;
+  }
+
+  // 初始化书架
+  function initBookshelf() {
+    const bookshelfList = document.getElementById('bookshelfList');
+    bookshelfList.innerHTML = '';
+
+    if (bookshelfBooks.length === 0) {
+      bookshelfList.innerHTML = `
+          <div class="col-span-full text-center py-20">
+            <i data-lucide="book-open" class="w-16 h-16 mx-auto mb-4 text-slate-600"></i>
+            <h3 class="text-xl font-medium mb-2">书架空空如也</h3>
+            <p class="text-slate-400 mb-6">快去添加你喜欢的小说吧</p>
+            <a href="/category" class="inline-block bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-medium transition-colors">
+              去逛逛
+            </a>
+          </div>
+        `;
+      return;
+    }
+
+    bookshelfBooks.forEach(book => {
+      const bookElement = document.createElement('div');
+      bookElement.className = 'card-hover relative group';
+      bookElement.innerHTML = `
+          <a href="/book-detail" class="block">
+            <div class="relative mb-3 rounded-lg overflow-hidden">
+              <img src="${book.cover}" alt="${book.title}" class="book-cover w-full" />
+              ${book.isUpdate ? `
+                <div class="absolute top-2 right-2 bg-red-500 px-2 py-1 rounded text-xs font-medium animate-pulse">
+                  更新
+                </div>
+              ` : ''}
+              <!-- 进度条 -->
+              <div class="absolute bottom-0 left-0 right-0 bg-black/70 p-2">
+                <div class="flex items-center justify-between text-xs mb-1">
+                  <span>阅读进度</span>
+                  <span>${book.progress}%</span>
+                </div>
+                <div class="w-full bg-slate-700 rounded-full h-1.5 overflow-hidden">
+                  <div class="bg-blue-500 h-full rounded-full" style="width: ${book.progress}%"></div>
+                </div>
+              </div>
+            </div>
+            <h4 class="font-medium mb-1 truncate">${book.title}</h4>
+            <p class="text-sm text-slate-400 mb-1 truncate">${book.author}</p>
+            <p class="text-xs text-slate-500 truncate">${book.lastChapter}</p>
+            <p class="text-xs text-slate-500">${book.updateTime}</p>
+          </a>
+          <!-- 删除按钮 -->
+          <button class="remove-book absolute top-2 left-2 bg-red-500 hover:bg-red-600 p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                  data-id="${book.id}">
+            <i data-lucide="trash-2" class="w-4 h-4"></i>
+          </button>
+        `;
+      bookshelfList.appendChild(bookElement);
+    });
+  }
+
+  // 初始化阅读历史
+  function initReadingHistory() {
+    const historyList = document.getElementById('historyList');
+    historyList.innerHTML = '';
+
+    readingHistory.forEach(book => {
+      const historyElement = document.createElement('div');
+      historyElement.className = 'flex items-center gap-4 p-4 bg-slate-700 rounded-lg hover:bg-slate-600 transition-colors';
+      historyElement.innerHTML = `
+          <img src="${book.cover}" alt="${book.title}"
+               class="w-16 h-20 object-cover rounded" />
+          <div class="flex-1 min-w-0">
+            <h4 class="font-medium mb-1 truncate">${book.title}</h4>
+            <p class="text-sm text-slate-400 mb-1">${book.author}</p>
+            <p class="text-xs text-slate-500">读到：${book.chapter}</p>
+          </div>
+          <div class="text-right">
+            <p class="text-xs text-slate-400 mb-2">${book.lastRead}</p>
+            <a href="/read"
+               class="inline-block bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm transition-colors">
+              继续阅读
+            </a>
+          </div>
+        `;
+      historyList.appendChild(historyElement);
+    });
+  }
+
+  // 初始化评论
+  function initComments() {
+    const commentsList = document.getElementById('commentsList');
+    commentsList.innerHTML = '';
+
+    myComments.forEach(comment => {
+      const commentElement = document.createElement('div');
+      commentElement.className = 'bg-slate-700 rounded-lg p-6';
+      commentElement.innerHTML = `
+          <div class="flex items-start justify-between mb-3">
+            <div>
+              <h4 class="font-medium mb-1">${comment.bookTitle}</h4>
+              <p class="text-sm text-slate-400">${comment.time}</p>
+            </div>
+            <button class="text-slate-400 hover:text-white">
+              <i data-lucide="more-horizontal" class="w-5 h-5"></i>
+            </button>
+          </div>
+          <p class="text-slate-300 mb-4 leading-relaxed">${comment.content}</p>
+          <div class="flex items-center gap-4 text-sm text-slate-400">
+            <button class="flex items-center gap-1 hover:text-blue-400 transition-colors">
+              <i data-lucide="thumbs-up" class="w-4 h-4"></i>
+              <span>${comment.likes}</span>
+            </button>
+          </div>
+        `;
+      commentsList.appendChild(commentElement);
+    });
+  }
+
+  // 初始化消息
+  function initMessages() {
+    const messagesList = document.getElementById('messagesList');
+    messagesList.innerHTML = '';
+
+    const unreadMessages = messages.filter(m => !m.isRead);
+    const unreadCount = unreadMessages.length;
+
+    // 更新未读消息数
+    const unreadCountElement = document.getElementById('unreadCount');
+    const messagesBadge = document.getElementById('messagesBadge');
+
+    if (unreadCount > 0) {
+      unreadCountElement.textContent = unreadCount;
+      unreadCountElement.classList.remove('hidden');
+      messagesBadge.textContent = unreadCount;
+      messagesBadge.classList.remove('hidden');
+    } else {
+      unreadCountElement.classList.add('hidden');
+      messagesBadge.classList.add('hidden');
+    }
+
+    messages.forEach(message => {
+      const messageElement = document.createElement('div');
+      messageElement.className = `flex items-start gap-4 p-4 rounded-lg cursor-pointer transition-colors ${
+              message.isRead ? 'bg-slate-700/50' : 'bg-slate-700'
+      }`;
+      messageElement.setAttribute('data-id', message.id);
+
+      const iconName = message.type === 'update' ? 'bell' : message.type === 'reply' ? 'message-circle' : 'info';
+      const bgColor = message.type === 'update' ? 'bg-blue-500' : message.type === 'reply' ? 'bg-green-500' : 'bg-purple-500';
+
+      messageElement.innerHTML = `
+          <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${bgColor}">
+            <i data-lucide="${iconName}" class="w-5 h-5"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-start justify-between mb-1">
+              <h4 class="font-medium ${message.isRead ? 'text-slate-400' : 'text-white'}">
+                ${message.title}
+              </h4>
+              ${!message.isRead ? '<span class="flex-shrink-0 w-2 h-2 bg-red-500 rounded-full"></span>' : ''}
+            </div>
+            <p class="text-sm text-slate-400 mb-1">${message.content}</p>
+            <p class="text-xs text-slate-500">${message.time}</p>
+          </div>
+        `;
+      messagesList.appendChild(messageElement);
+    });
+  }
+
+  // 添加事件监听器
+  function addEventListeners() {
+    // 标签页切换
+    document.querySelectorAll('.tab-button').forEach(button => {
+      button.addEventListener('click', function() {
+        const tab = this.getAttribute('data-tab');
+        switchTab(tab);
+      });
+    });
+
+    // 删除书籍
+    document.addEventListener('click', function(e) {
+      if (e.target.closest('.remove-book')) {
+        const button = e.target.closest('.remove-book');
+        const bookId = parseInt(button.getAttribute('data-id'));
+        removeBook(bookId);
+      }
+    });
+
+    // 标记消息已读
+    document.addEventListener('click', function(e) {
+      const messageElement = e.target.closest('[data-id]');
+      if (messageElement && document.getElementById('messagesContent').classList.contains('hidden') === false) {
+        const messageId = parseInt(messageElement.getAttribute('data-id'));
+        markAsRead(messageId);
+      }
+    });
+  }
+
+  // 切换标签页
+  function switchTab(tab) {
+    activeTab = tab;
+
+    // 更新标签按钮状态
+    document.querySelectorAll('.tab-button').forEach(button => {
+      if (button.getAttribute('data-tab') === tab) {
+        button.classList.add('active', 'text-blue-400');
+        button.classList.remove('text-slate-400', 'hover:text-white');
+      } else {
+        button.classList.remove('active', 'text-blue-400');
+        button.classList.add('text-slate-400', 'hover:text-white');
+      }
+    });
+
+    // 显示对应内容
+    document.getElementById('bookshelfContent').classList.toggle('hidden', tab !== 'bookshelf');
+    document.getElementById('historyContent').classList.toggle('hidden', tab !== 'history');
+    document.getElementById('commentsContent').classList.toggle('hidden', tab !== 'comments');
+    document.getElementById('messagesContent').classList.toggle('hidden', tab !== 'messages');
+  }
+
+  // 标记消息已读
+  function markAsRead(messageId) {
+    const message = messages.find(m => m.id === messageId);
+    if (message && !message.isRead) {
+      message.isRead = true;
+      initMessages();
+    }
+  }
+
+  // 删除书籍
+  function removeBook(bookId) {
+    const index = bookshelfBooks.findIndex(b => b.id === bookId);
+    if (index > -1) {
+      bookshelfBooks.splice(index, 1);
+      initBookshelf();
+      initUserInfo(); // 更新书架数量
+    }
+  }
+
+  // 初始化应用
+  document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
